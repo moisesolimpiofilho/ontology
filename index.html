@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Versões - Ontologia Escolar</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <h1>🧠 Gerenciador de Ontologia Escolar</h1>
+        <div class="version-badge" id="navbarVersion">v1</div>
+    </nav>
+
+    <div class="main-container">
+        <aside class="sidebar">
+            <h2>Histórico de Versões</h2>
+            <div class="timeline" id="timeline"></div>
+        </aside>
+
+        <div class="right-panel">
+            <div class="graph-area" id="graphArea">
+                <span class="graph-header">Grafo 3D da Ontologia</span>
+                <canvas id="ontologyCanvas"></canvas>
+                <div class="graph-legend">
+                    <span><span class="dot" style="background:#2a5298;"></span> Classe</span>
+                    <span><span class="dot" style="background:#e67e22;"></span> Selecionada</span>
+                    <span><span class="dot" style="background:#27ae60;"></span> Relação ativa</span>
+                </div>
+                <div class="graph-hint">Arraste para girar • Scroll para zoom</div>
+            </div>
+
+            <div class="detail-area" id="detailArea">
+                <div class="placeholder" id="placeholder">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 16v-4M12 8h.01"/>
+                    </svg>
+                    <p>Clique em uma esfera no grafo 3D para ver seus detalhes e relações.</p>
+                </div>
+            </div>
+
+            <div class="version-nav">
+                <button id="btnPrev" title="Versão anterior">← Anterior</button>
+                <button id="btnNext" title="Próxima versão">Próxima →</button>
+                <div class="current-version">Versão atual: <strong id="currentVersionLabel">v1</strong></div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="index.js"></script>
+</body>
+</html>
