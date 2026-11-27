@@ -47,6 +47,7 @@ services:
       - postgres
       - mongo
     volumes:
+      - ./web/temp:/app/temp    # Persiste os .owl enviados no host
       # DICA EXTRA: Isso mapeia a sua pasta local para o container.
       # Assim, se você alterar o HTML ou o app.py, não precisa rebuildar a imagem.
       - ./web:/app

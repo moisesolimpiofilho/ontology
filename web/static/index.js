@@ -1,794 +1,4234 @@
-// ============================================================
-// DADOS DAS VERSÕES DA ONTOLOGIA ESCOLAR
-// ============================================================
-const ontologyVersions = [
-    {
-        id: 'v1', name: 'v1 - Versão Inicial',
-        desc: 'Estrutura básica com classes fundamentais do ambiente escolar.',
-        date: '2024-01-15',
-        classes: [
-            { id: 'Escola', label: 'Escola' },
-            { id: 'Aluno', label: 'Aluno' },
-            { id: 'Professor', label: 'Professor' },
-            { id: 'Turma', label: 'Turma' }
-        ],
-        relations: [
-            { subject: 'Aluno', predicate: 'estudaEm', object: 'Turma' },
-            { subject: 'Professor', predicate: 'lecionaEm', object: 'Turma' },
-            { subject: 'Turma', predicate: 'pertenceA', object: 'Escola' }
-        ]
-    },
-    {
-        id: 'v2', name: 'v2 - Adição de Disciplinas',
-        desc: 'Inclusão de disciplinas e suas relações com professores e turmas.',
-        date: '2024-03-02',
-        classes: [
-            { id: 'Escola', label: 'Escola' },
-            { id: 'Aluno', label: 'Aluno' },
-            { id: 'Professor', label: 'Professor' },
-            { id: 'Turma', label: 'Turma' },
-            { id: 'Disciplina', label: 'Disciplina' }
-        ],
-        relations: [
-            { subject: 'Aluno', predicate: 'estudaEm', object: 'Turma' },
-            { subject: 'Professor', predicate: 'lecionaEm', object: 'Turma' },
-            { subject: 'Turma', predicate: 'pertenceA', object: 'Escola' },
-            { subject: 'Professor', predicate: 'ministra', object: 'Disciplina' },
-            { subject: 'Disciplina', predicate: 'fazParteDe', object: 'Turma' }
-        ]
-    },
-    {
-        id: 'v3', name: 'v3 - Avaliações e Notas',
-        desc: 'Introdução de avaliações, notas e conceitos de desempenho.',
-        date: '2024-05-10',
-        classes: [
-            { id: 'Escola', label: 'Escola' },
-            { id: 'Aluno', label: 'Aluno' },
-            { id: 'Professor', label: 'Professor' },
-            { id: 'Turma', label: 'Turma' },
-            { id: 'Disciplina', label: 'Disciplina' },
-            { id: 'Avaliacao', label: 'Avaliação' },
-            { id: 'Nota', label: 'Nota' }
-        ],
-        relations: [
-            { subject: 'Aluno', predicate: 'estudaEm', object: 'Turma' },
-            { subject: 'Professor', predicate: 'lecionaEm', object: 'Turma' },
-            { subject: 'Turma', predicate: 'pertenceA', object: 'Escola' },
-            { subject: 'Professor', predicate: 'ministra', object: 'Disciplina' },
-            { subject: 'Disciplina', predicate: 'fazParteDe', object: 'Turma' },
-            { subject: 'Avaliacao', predicate: 'avalia', object: 'Aluno' },
-            { subject: 'Avaliacao', predicate: 'relacionaSeA', object: 'Disciplina' },
-            { subject: 'Nota', predicate: 'atribuidaA', object: 'Aluno' },
-            { subject: 'Nota', predicate: 'referenteA', object: 'Avaliacao' }
-        ]
-    },
-    {
-        id: 'v4', name: 'v4 - Recursos e Espaços',
-        desc: 'Modelagem de recursos físicos, salas e equipamentos da escola.',
-        date: '2024-07-22',
-        classes: [
-            { id: 'Escola', label: 'Escola' },
-            { id: 'Aluno', label: 'Aluno' },
-            { id: 'Professor', label: 'Professor' },
-            { id: 'Turma', label: 'Turma' },
-            { id: 'Disciplina', label: 'Disciplina' },
-            { id: 'Avaliacao', label: 'Avaliação' },
-            { id: 'Nota', label: 'Nota' },
-            { id: 'Sala', label: 'Sala' },
-            { id: 'Recurso', label: 'Recurso' }
-        ],
-        relations: [
-            { subject: 'Aluno', predicate: 'estudaEm', object: 'Turma' },
-            { subject: 'Professor', predicate: 'lecionaEm', object: 'Turma' },
-            { subject: 'Turma', predicate: 'pertenceA', object: 'Escola' },
-            { subject: 'Professor', predicate: 'ministra', object: 'Disciplina' },
-            { subject: 'Disciplina', predicate: 'fazParteDe', object: 'Turma' },
-            { subject: 'Avaliacao', predicate: 'avalia', object: 'Aluno' },
-            { subject: 'Avaliacao', predicate: 'relacionaSeA', object: 'Disciplina' },
-            { subject: 'Nota', predicate: 'atribuidaA', object: 'Aluno' },
-            { subject: 'Nota', predicate: 'referenteA', object: 'Avaliacao' },
-            { subject: 'Turma', predicate: 'utiliza', object: 'Sala' },
-            { subject: 'Sala', predicate: 'contem', object: 'Recurso' }
-        ]
-    },
-    {
-        id: 'v5', name: 'v5 - Calendário e Eventos',
-        desc: 'Versão mais completa com calendário escolar, eventos e horários.',
-        date: '2024-09-05',
-        classes: [
-            { id: 'Escola', label: 'Escola' },
-            { id: 'Aluno', label: 'Aluno' },
-            { id: 'Professor', label: 'Professor' },
-            { id: 'Turma', label: 'Turma' },
-            { id: 'Disciplina', label: 'Disciplina' },
-            { id: 'Avaliacao', label: 'Avaliação' },
-            { id: 'Nota', label: 'Nota' },
-            { id: 'Sala', label: 'Sala' },
-            { id: 'Recurso', label: 'Recurso' },
-            { id: 'Evento', label: 'Evento' },
-            { id: 'Horario', label: 'Horário' }
-        ],
-        relations: [
-            { subject: 'Aluno', predicate: 'estudaEm', object: 'Turma' },
-            { subject: 'Professor', predicate: 'lecionaEm', object: 'Turma' },
-            { subject: 'Turma', predicate: 'pertenceA', object: 'Escola' },
-            { subject: 'Professor', predicate: 'ministra', object: 'Disciplina' },
-            { subject: 'Disciplina', predicate: 'fazParteDe', object: 'Turma' },
-            { subject: 'Avaliacao', predicate: 'avalia', object: 'Aluno' },
-            { subject: 'Avaliacao', predicate: 'relacionaSeA', object: 'Disciplina' },
-            { subject: 'Nota', predicate: 'atribuidaA', object: 'Aluno' },
-            { subject: 'Nota', predicate: 'referenteA', object: 'Avaliacao' },
-            { subject: 'Turma', predicate: 'utiliza', object: 'Sala' },
-            { subject: 'Sala', predicate: 'contem', object: 'Recurso' },
-            { subject: 'Evento', predicate: 'ocorreEm', object: 'Escola' },
-            { subject: 'Evento', predicate: 'envolve', object: 'Turma' },
-            { subject: 'Horario', predicate: 'define', object: 'Disciplina' },
-            { subject: 'Horario', predicate: 'alocadoEm', object: 'Sala' }
-        ]
-    }
+/* ==========================================================================
+       1. ESTADO GLOBAL DA ONTOLOGIA, VERSIONAMENTO E UI
+       ========================================================================== */
+const PALETTE = [
+    "#38bdf8", "#818cf8", "#34d399", "#fbbf24", "#f472b6",
+    "#a78bfa", "#2dd4bf", "#fb923c", "#60a5fa", "#e879f9"
 ];
 
-// ============================================================
-// ESTADO GLOBAL
-// ============================================================
-let currentVersionIndex = 0;
-let selectedNodeId = null;
+const ontology = {
+    iri: "http://example.org/ontocube#",
+    classes: new Map(),      // id -> { id, label, comment, parents:Set, disjointWith:Set, color, expanded, hidden, x,y,z, cellW, cellD }
+    objProps: new Map(),     // id -> { id, label, domain, range, inverseOf, functional, symmetric, transitive, irreflexive, asymmetric }
+    dataProps: new Map(),    // id -> { id, label, domain, range, functional }
+    individuals: new Map()   // id -> { id, label, types:Set, dataValues:[{prop, value, datatype}], objLinks:[{prop, target}], hidden, x,y,z }
+};
 
-// Elementos
-const timelineEl = document.getElementById('timeline');
-const detailArea = document.getElementById('detailArea');
-const navbarVersion = document.getElementById('navbarVersion');
-const currentVersionLabel = document.getElementById('currentVersionLabel');
-const btnPrev = document.getElementById('btnPrev');
-const btnNext = document.getElementById('btnNext');
-const graphArea = document.getElementById('graphArea');
-const canvas = document.getElementById('ontologyCanvas');
+const versionState = {
+    history: [],             // [{ version, timestamp, label, snapshot }]
+    activeIndex: -1,
+    baseIndex: -1,
+    showDiff: true,
+    onlyChanged: false,
+    currentDiff: null
+};
 
-// Three.js globals
-let scene, camera, renderer, raycaster, mouse;
-let nodeMeshes = [];        // esferas clicáveis
-let relationMeshes = [];     // linhas entre nós
-let labelSprites = [];       // rótulos das classes
-let predicateSprites = [];   // rótulos das relações
-let nodePositions3D = {};    // id -> Vector3
-let animationId = null;
+const uiState = {
+    selectedId: null,
+    selectedKind: null,      // "class" | "objProp" | "dataProp" | "individual"
+    treeRootId: null,        // Raiz da árvore atualmente explorada no T-BOX
+    hoveredNodeId: null,
+    hoveredEdge: null,       // { label, x, y }
+    stageActive: false,      // Inicia falso: palco 3D limpo até selecionar uma classe ou clicar em Exibir Tudo
+    isolateNeighborhood: true,
+    subClassMode: "selected",// "selected" | "all" | "none"
+    viewMode: "tbox",        // "tbox" | "abox" | "yx" | "zx" | "free"
+    showOwlThing: false,
+    autoOcclude: false,
+    showBoundaries: false,
+    spreadXZ: 1.25,
+    spreadY: 1.25,
+    searchQuery: "",
+    leftTab: "explorer",
+    rightTab: "inspector",
+    panelLeftOpen: true,
+    panelRightOpen: true,
+    forestPlanes: []
+};
 
-// Controle de órbita manual (sem OrbitControls, para evitar dependência extra)
-let isDragging = false;
-let prevMouse = { x: 0, y: 0 };
-let spherical = { radius: 220, theta: Math.PI / 4, phi: Math.PI / 3 };
-let cameraTarget = new THREE.Vector3(0, 0, 0);
+const camera = {
+    targetX: 0,
+    targetY: 220,
+    targetZ: 0,
+    yaw: 0.0,
+    pitch: 0.42,
+    distance: 1650,
+    fov: 620
+};
 
-// ============================================================
-// UTILITÁRIOS
-// ============================================================
-function getCurrentVersion() { return ontologyVersions[currentVersionIndex]; }
+let evoRows = [];
+let validationIssues = [];
+let projectedCardsCache = [];
+let projectedEdgesCache = [];
 
-// ============================================================
-// TIMELINE
-// ============================================================
-function renderTimeline() {
-    timelineEl.innerHTML = '';
-    ontologyVersions.forEach((version, index) => {
-        const item = document.createElement('div');
-        item.className = 'timeline-item' + (index === currentVersionIndex ? ' active' : '');
-        item.dataset.index = index;
-
-        const dot = document.createElement('div');
-        dot.className = 'timeline-dot';
-
-        const content = document.createElement('div');
-        content.className = 'timeline-content';
-
-        const versionName = document.createElement('div');
-        versionName.className = 'timeline-version';
-        versionName.textContent = version.name;
-
-        const desc = document.createElement('div');
-        desc.className = 'timeline-desc';
-        desc.textContent = version.desc;
-
-        const date = document.createElement('div');
-        date.className = 'timeline-date';
-        date.textContent = '📅 ' + version.date;
-
-        content.appendChild(versionName);
-        content.appendChild(desc);
-        content.appendChild(date);
-
-        const tooltip = document.createElement('div');
-        tooltip.className = 'tooltip';
-        tooltip.textContent = `Clique para visualizar ${version.name}`;
-
-        item.appendChild(dot);
-        item.appendChild(content);
-        item.appendChild(tooltip);
-        item.addEventListener('click', () => selectVersion(index));
-        timelineEl.appendChild(item);
-    });
+/* ==========================================================================
+   2. UTILITÁRIOS GERAIS
+   ========================================================================== */
+function showToast(msg) {
+    const container = document.getElementById("toastContainer");
+    const el = document.createElement("div");
+    el.className = "toast";
+    el.textContent = msg;
+    container.appendChild(el);
+    setTimeout(() => {
+        el.style.opacity = "0";
+        el.style.transition = "opacity 0.25s";
+        setTimeout(() => el.remove(), 260);
+    }, 2800);
 }
 
-// ============================================================
-// SELEÇÃO DE VERSÃO
-// ============================================================
-function selectVersion(index) {
-    if (index < 0 || index >= ontologyVersions.length) return;
-    currentVersionIndex = index;
-    selectedNodeId = null;
-
-    document.querySelectorAll('.timeline-item').forEach((el, i) => {
-        el.classList.toggle('active', i === index);
-    });
-
-    const version = getCurrentVersion();
-    navbarVersion.textContent = version.id;
-    currentVersionLabel.textContent = version.id;
-    btnPrev.disabled = currentVersionIndex === 0;
-    btnNext.disabled = currentVersionIndex === ontologyVersions.length - 1;
-
-    showPlaceholder();
-    buildGraph3D();
+function escapeHtml(str) {
+    return String(str ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
 }
 
-// ============================================================
-// INICIALIZAÇÃO DO THREE.JS
-// ============================================================
-function initThree() {
-    scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0b1426);
-    scene.fog = new THREE.Fog(0x0b1426, 400, 900);
-
-    // Câmera
-    camera = new THREE.PerspectiveCamera(
-        50,
-        graphArea.clientWidth / graphArea.clientHeight,
-        0.1,
-        2000
-    );
-    updateCameraPosition();
-
-    // Renderer
-    renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(graphArea.clientWidth, graphArea.clientHeight, false);
-
-    // Luzes
-    const ambient = new THREE.AmbientLight(0xffffff, 0.55);
-    scene.add(ambient);
-
-    const keyLight = new THREE.DirectionalLight(0xffffff, 0.9);
-    keyLight.position.set(120, 180, 150);
-    scene.add(keyLight);
-
-    const fillLight = new THREE.DirectionalLight(0x6ea8ff, 0.5);
-    fillLight.position.set(-150, -100, -100);
-    scene.add(fillLight);
-
-    const rimLight = new THREE.PointLight(0x27ae60, 0.6, 500);
-    rimLight.position.set(0, 200, -200);
-    scene.add(rimLight);
-
-    // Céu estrelado (partículas)
-    addStarfield();
-
-    // Raycaster
-    raycaster = new THREE.Raycaster();
-    mouse = new THREE.Vector2();
-
-    // Eventos
-    setupPointerEvents();
-
-    // Loop
-    animate();
-}
-
-function addStarfield() {
-    const geometry = new THREE.BufferGeometry();
-    const count = 600;
-    const positions = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-        positions[i * 3] = (Math.random() - 0.5) * 1200;
-        positions[i * 3 + 1] = (Math.random() - 0.5) * 1200;
-        positions[i * 3 + 2] = (Math.random() - 0.5) * 1200;
+function localName(uri) {
+    if (!uri) return "";
+    const s = String(uri).trim();
+    if (s === "owl:Thing" || s.endsWith("#Thing") || s.endsWith("/Thing")) return "owl:Thing";
+    if (s.startsWith("xsd:")) return s;
+    if (s.includes("#")) return s.split("#").pop();
+    if (s.includes("/")) {
+        const parts = s.split("/").filter(Boolean);
+        return parts[parts.length - 1] || s;
     }
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    const material = new THREE.PointsMaterial({
-        color: 0x6ea8ff, size: 1.4, transparent: true, opacity: 0.55
-    });
-    scene.add(new THREE.Points(geometry, material));
+    if (s.includes(":") && !s.startsWith("http")) return s.split(":").pop();
+    return s;
 }
 
-// ============================================================
-// CONSTRUÇÃO DO GRAFO 3D
-// ============================================================
-function buildGraph3D() {
-    // Remove elementos antigos
-    [...nodeMeshes, ...relationMeshes, ...labelSprites, ...predicateSprites].forEach(obj => {
-        if (obj.parent) obj.parent.remove(obj);
-        if (obj.geometry) obj.geometry.dispose();
-        if (obj.material) {
-            if (Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
-            else obj.material.dispose();
+function sanitizeId(raw) {
+    const clean = String(raw || "")
+        .trim()
+        .replace(/^["'<>]+|["'<>]+$/g, "")
+        .replace(/\s+/g, "_");
+    return clean || "Entidade_" + Math.floor(Math.random() * 10000);
+}
+
+function pickColor(idx) {
+    return PALETTE[Math.abs(idx) % PALETTE.length];
+}
+
+function ensureOwlThing() {
+    if (!ontology.classes.has("owl:Thing")) {
+        ontology.classes.set("owl:Thing", {
+            id: "owl:Thing",
+            label: "owl:Thing",
+            comment: "Classe raiz universal OWL",
+            parents: new Set(),
+            disjointWith: new Set(),
+            color: "#64748b",
+            expanded: true,
+            hidden: false,
+            x: 0,
+            y: 520,
+            z: 0,
+            cellW: 200,
+            cellD: 100
+        });
+    }
+}
+
+function initEmptyOntology() {
+    ontology.iri = "http://example.org/ontocube#";
+    ontology.classes.clear();
+    ontology.objProps.clear();
+    ontology.dataProps.clear();
+    ontology.individuals.clear();
+    ensureOwlThing();
+    uiState.selectedId = null;
+    uiState.selectedKind = null;
+    uiState.treeRootId = null;
+    uiState.stageActive = false;
+    versionState.history = [];
+    versionState.activeIndex = -1;
+    versionState.baseIndex = -1;
+    versionState.currentDiff = null;
+    refreshAllUI();
+}
+
+/* ==========================================================================
+   3. VERSIONAMENTO AUTOMÁTICO E CÁLCULO DE DIFERENÇAS (DIFF GENÉRICO)
+   ========================================================================== */
+function serializeSnapshot() {
+    const classes = {};
+    for (const [id, c] of ontology.classes.entries()) {
+        if (id === "owl:Thing") continue;
+        classes[id] = {
+            id: c.id,
+            label: c.label,
+            comment: c.comment || "",
+            parents: Array.from(c.parents).filter((p) => p !== "owl:Thing").sort(),
+            disjointWith: Array.from(c.disjointWith).sort(),
+            color: c.color
+        };
+    }
+    const objProps = {};
+    for (const [id, p] of ontology.objProps.entries()) {
+        objProps[id] = {
+            id: p.id,
+            label: p.label,
+            domain: p.domain || "",
+            range: p.range || "",
+            inverseOf: p.inverseOf || "",
+            functional: !!p.functional,
+            symmetric: !!p.symmetric,
+            transitive: !!p.transitive,
+            irreflexive: !!p.irreflexive,
+            asymmetric: !!p.asymmetric
+        };
+    }
+    const dataProps = {};
+    for (const [id, d] of ontology.dataProps.entries()) {
+        dataProps[id] = {
+            id: d.id,
+            label: d.label,
+            domain: d.domain || "",
+            range: d.range || "xsd:string",
+            functional: !!d.functional
+        };
+    }
+    const individuals = {};
+    for (const [id, ind] of ontology.individuals.entries()) {
+        individuals[id] = {
+            id: ind.id,
+            label: ind.label,
+            types: Array.from(ind.types).filter((t) => t !== "owl:Thing").sort(),
+            dataValues: ind.dataValues.map((dv) => ({
+                prop: dv.prop,
+                value: String(dv.value),
+                datatype: dv.datatype || "xsd:string"
+            })),
+            objLinks: ind.objLinks.map((lk) => ({
+                prop: lk.prop,
+                target: lk.target
+            }))
+        };
+    }
+    return { iri: ontology.iri, classes, objProps, dataProps, individuals };
+}
+
+function restoreSnapshot(snap) {
+    if (!snap) return;
+    ontology.iri = snap.iri || "http://example.org/ontocube#";
+    ontology.classes.clear();
+    ontology.objProps.clear();
+    ontology.dataProps.clear();
+    ontology.individuals.clear();
+    ensureOwlThing();
+
+    let idx = 0;
+    for (const [id, c] of Object.entries(snap.classes || {})) {
+        const parents = new Set(c.parents || []);
+        if (parents.size === 0) parents.add("owl:Thing");
+        ontology.classes.set(id, {
+            id,
+            label: c.label || id,
+            comment: c.comment || "",
+            parents,
+            disjointWith: new Set(c.disjointWith || []),
+            color: c.color || pickColor(idx++),
+            expanded: false,
+            hidden: false,
+            x: 0,
+            y: 0,
+            z: 0,
+            cellW: 215,
+            cellD: 100
+        });
+    }
+
+    for (const [id, p] of Object.entries(snap.objProps || {})) {
+        ontology.objProps.set(id, { ...p });
+    }
+
+    for (const [id, d] of Object.entries(snap.dataProps || {})) {
+        ontology.dataProps.set(id, { ...d });
+    }
+
+    for (const [id, ind] of Object.entries(snap.individuals || {})) {
+        ontology.individuals.set(id, {
+            id,
+            label: ind.label || id,
+            types: new Set(ind.types || []),
+            dataValues: (ind.dataValues || []).map((dv) => ({ ...dv })),
+            objLinks: (ind.objLinks || []).map((lk) => ({ ...lk })),
+            hidden: false,
+            x: 0,
+            y: 0,
+            z: 0
+        });
+    }
+}
+
+function createVersionSnapshot(actionLabel, resetHistory = false) {
+    const snap = serializeSnapshot();
+    if (resetHistory) {
+        versionState.history = [];
+        versionState.activeIndex = -1;
+        versionState.baseIndex = -1;
+    } else if (versionState.activeIndex < versionState.history.length - 1) {
+        versionState.history = versionState.history.slice(0, versionState.activeIndex + 1);
+    }
+
+    const verNum = versionState.history.length + 1;
+    const now = new Date();
+    const timeStr = now.toTimeString().slice(0, 8);
+    versionState.history.push({
+        version: verNum,
+        timestamp: timeStr,
+        label: actionLabel || `Alteração v${verNum}`,
+        snapshot: snap
+    });
+
+    versionState.activeIndex = versionState.history.length - 1;
+    versionState.baseIndex = Math.max(0, versionState.activeIndex - 1);
+    recomputeDiff();
+}
+
+function computeSnapshotDiff(baseSnap, targetSnap) {
+    const diff = {
+        classes: new Map(),      // id -> { status: 'added'|'modified'|'removed', changes: [], oldData }
+        objProps: new Map(),
+        dataProps: new Map(),
+        individuals: new Map(),
+        counts: { added: 0, modified: 0, removed: 0 }
+    };
+    if (!baseSnap || !targetSnap) return diff;
+
+    // Classes
+    const allClassIds = new Set([
+        ...Object.keys(baseSnap.classes || {}),
+        ...Object.keys(targetSnap.classes || {})
+    ]);
+    for (const id of allClassIds) {
+        const a = baseSnap.classes[id];
+        const b = targetSnap.classes[id];
+        if (!a && b) {
+            diff.classes.set(id, { status: "added", changes: ["Classe adicionada"], oldData: null });
+            diff.counts.added++;
+        } else if (a && !b) {
+            diff.classes.set(id, { status: "removed", changes: ["Classe removida"], oldData: a });
+            diff.counts.removed++;
+        } else if (a && b) {
+            const changes = [];
+            if (a.label !== b.label) changes.push(`Rótulo: "${a.label}" → "${b.label}"`);
+            if ((a.comment || "") !== (b.comment || "")) changes.push("Descrição alterada");
+            if (JSON.stringify(a.parents) !== JSON.stringify(b.parents)) {
+                changes.push(`Superclasses: [${a.parents.join(", ")}] → [${b.parents.join(", ")}]`);
+            }
+            if (JSON.stringify(a.disjointWith) !== JSON.stringify(b.disjointWith)) {
+                changes.push(`Disjunções: [${a.disjointWith.join(", ")}] → [${b.disjointWith.join(", ")}]`);
+            }
+            if (changes.length > 0) {
+                diff.classes.set(id, { status: "modified", changes, oldData: a });
+                diff.counts.modified++;
+            }
         }
-    });
-    nodeMeshes = [];
-    relationMeshes = [];
-    labelSprites = [];
-    predicateSprites = [];
-    nodePositions3D = {};
+    }
 
-    const version = getCurrentVersion();
-    const N = version.classes.length;
-    const radius = N <= 4 ? 70 : N <= 7 ? 95 : 115;
-
-    // Distribui os nós em uma esfera (distribuição Fibonacci)
-    version.classes.forEach((cls, i) => {
-        const y = 1 - (i / Math.max(1, N - 1)) * 2;   // 1 .. -1
-        const radiusAtY = Math.sqrt(1 - y * y);
-        const theta = i * Math.PI * (3 - Math.sqrt(5)); // ângulo áureo
-
-        const x = Math.cos(theta) * radiusAtY;
-        const z = Math.sin(theta) * radiusAtY;
-
-        const pos = new THREE.Vector3(
-            x * radius,
-            y * radius * 0.85,
-            z * radius
-        );
-        nodePositions3D[cls.id] = pos;
-
-        // Esfera
-        const geo = new THREE.SphereGeometry(18, 32, 32);
-        const mat = new THREE.MeshPhongMaterial({
-            color: 0x2a5298,
-            emissive: 0x0e2a5c,
-            shininess: 90,
-            specular: 0x9fc3ff
-        });
-        const sphere = new THREE.Mesh(geo, mat);
-        sphere.position.copy(pos);
-        sphere.userData = { id: cls.id, label: cls.label };
-        scene.add(sphere);
-        nodeMeshes.push(sphere);
-
-        // Halo luminoso
-        const haloGeo = new THREE.SphereGeometry(22, 24, 24);
-        const haloMat = new THREE.MeshBasicMaterial({
-            color: 0x6ea8ff, transparent: true, opacity: 0.12
-        });
-        const halo = new THREE.Mesh(haloGeo, haloMat);
-        halo.position.copy(pos);
-        scene.add(halo);
-        sphere.userData.halo = halo;
-
-        // Rótulo (sprite)
-        const labelSprite = makeTextSprite(cls.label, {
-            fontsize: 34, fontface: 'Segoe UI',
-            color: '#ffffff',
-            bg: 'rgba(20,40,80,0.85)',
-            border: 'rgba(110,168,255,0.6)'
-        });
-        labelSprite.position.set(pos.x, pos.y + 30, pos.z);
-        labelSprite.scale.set(60, 18, 1);
-        scene.add(labelSprite);
-        labelSprites.push(labelSprite);
-        sphere.userData.labelSprite = labelSprite;
-    });
-
-    // Arestas (tubos com setas)
-    version.relations.forEach(rel => {
-        const p1 = nodePositions3D[rel.subject];
-        const p2 = nodePositions3D[rel.object];
-        if (!p1 || !p2) return;
-
-        const dir = new THREE.Vector3().subVectors(p2, p1).normalize();
-        const start = p1.clone().add(dir.clone().multiplyScalar(20));
-        const end = p2.clone().add(dir.clone().multiplyScalar(-20));
-        const length = start.distanceTo(end);
-        const mid = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
-
-        // Tubo
-        const tubeGeo = new THREE.CylinderGeometry(1.4, 1.4, length, 8);
-        const tubeMat = new THREE.MeshPhongMaterial({
-            color: 0x3f6fb5, emissive: 0x0a1e3c, shininess: 60
-        });
-        const tube = new THREE.Mesh(tubeGeo, tubeMat);
-
-        // Orienta o cilindro na direção da aresta
-        tube.position.copy(mid);
-        tube.quaternion.setFromUnitVectors(
-            new THREE.Vector3(0, 1, 0),
-            dir
-        );
-        scene.add(tube);
-        tube.userData = { subject: rel.subject, object: rel.object, predicate: rel.predicate };
-        relationMeshes.push(tube);
-
-        // Cone da seta
-        const coneGeo = new THREE.ConeGeometry(4, 11, 12);
-        const coneMat = new THREE.MeshPhongMaterial({
-            color: 0x6ea8ff, emissive: 0x1a3a6e
-        });
-        const cone = new THREE.Mesh(coneGeo, coneMat);
-        cone.position.copy(end);
-        cone.quaternion.setFromUnitVectors(
-            new THREE.Vector3(0, 1, 0),
-            dir
-        );
-        scene.add(cone);
-        relationMeshes.push(cone);
-        tube.userData.cone = cone;
-
-        // Rótulo do predicado no meio
-        const predSprite = makeTextSprite(rel.predicate, {
-            fontsize: 26, fontface: 'Segoe UI',
-            color: '#c8d9f0',
-            bg: 'rgba(11,20,38,0.75)',
-            border: 'rgba(63,111,181,0.5)'
-        });
-        predSprite.position.copy(mid);
-        predSprite.scale.set(50, 14, 1);
-        scene.add(predSprite);
-        predicateSprites.push(predSprite);
-        tube.userData.predSprite = predSprite;
-    });
-
-    // Ajusta câmera para enquadrar
-    fitCameraToGraph();
-}
-
-// Sprite de texto usando canvas 2D
-function makeTextSprite(text, opts = {}) {
-    const fontsize = opts.fontsize || 32;
-    const fontface = opts.fontface || 'Arial';
-    const color = opts.color || '#ffffff';
-    const bg = opts.bg || 'rgba(0,0,0,0.6)';
-    const border = opts.border || 'rgba(255,255,255,0.3)';
-
-    const canvas2d = document.createElement('canvas');
-    const ctx2d = canvas2d.getContext('2d');
-    const padding = 16;
-    const font = `600 ${fontsize}px ${fontface}`;
-    ctx2d.font = font;
-    const textWidth = ctx2d.measureText(text).width;
-
-    canvas2d.width = Math.ceil(textWidth + padding * 2);
-    canvas2d.height = Math.ceil(fontsize + padding * 1.4);
-
-    // Fundo arredondado
-    ctx2d.font = font;
-    const w = canvas2d.width, h = canvas2d.height, r = 10;
-    ctx2d.beginPath();
-    ctx2d.moveTo(r, 0);
-    ctx2d.arcTo(w, 0, w, h, r);
-    ctx2d.arcTo(w, h, 0, h, r);
-    ctx2d.arcTo(0, h, 0, 0, r);
-    ctx2d.arcTo(0, 0, w, 0, r);
-    ctx2d.closePath();
-    ctx2d.fillStyle = bg;
-    ctx2d.fill();
-    ctx2d.lineWidth = 2;
-    ctx2d.strokeStyle = border;
-    ctx2d.stroke();
-
-    // Texto
-    ctx2d.font = font;
-    ctx2d.fillStyle = color;
-    ctx2d.textAlign = 'center';
-    ctx2d.textBaseline = 'middle';
-    ctx2d.fillText(text, w / 2, h / 2 + 1);
-
-    const texture = new THREE.CanvasTexture(canvas2d);
-    texture.minFilter = THREE.LinearFilter;
-    const material = new THREE.SpriteMaterial({
-        map: texture, transparent: true, depthTest: false
-    });
-    const sprite = new THREE.Sprite(material);
-    const aspect = w / h;
-    sprite.userData.aspect = aspect;
-    return sprite;
-}
-
-// ============================================================
-// CÂMERA
-// ============================================================
-function updateCameraPosition() {
-    if (!camera) return;
-    const { radius, theta, phi } = spherical;
-    const x = radius * Math.sin(phi) * Math.cos(theta);
-    const y = radius * Math.cos(phi);
-    const z = radius * Math.sin(phi) * Math.sin(theta);
-    camera.position.set(x, y, z);
-    camera.lookAt(cameraTarget);
-}
-
-function fitCameraToGraph() {
-    const version = getCurrentVersion();
-    const N = version.classes.length;
-    const radius = N <= 4 ? 70 : N <= 7 ? 95 : 115;
-    spherical.radius = radius * 2.6;
-    spherical.theta = Math.PI / 4;
-    spherical.phi = Math.PI / 2.6;
-    cameraTarget.set(0, 0, 0);
-    updateCameraPosition();
-}
-
-// ============================================================
-// EVENTOS DE PONTEIRO (rotação, zoom, clique)
-// ============================================================
-function setupPointerEvents() {
-    const el = renderer.domElement;
-
-    el.addEventListener('mousedown', (e) => {
-        isDragging = true;
-        prevMouse.x = e.clientX;
-        prevMouse.y = e.clientY;
-    });
-
-    window.addEventListener('mouseup', () => { isDragging = false; });
-
-    window.addEventListener('mousemove', (e) => {
-        if (!isDragging) {
-            updateHover(e);
-            return;
+    // ObjectProperties
+    const allObjIds = new Set([
+        ...Object.keys(baseSnap.objProps || {}),
+        ...Object.keys(targetSnap.objProps || {})
+    ]);
+    for (const id of allObjIds) {
+        const a = baseSnap.objProps[id];
+        const b = targetSnap.objProps[id];
+        if (!a && b) {
+            diff.objProps.set(id, { status: "added", changes: ["Relação adicionada"], oldData: null });
+            diff.counts.added++;
+        } else if (a && !b) {
+            diff.objProps.set(id, { status: "removed", changes: ["Relação removida"], oldData: a });
+            diff.counts.removed++;
+        } else if (a && b) {
+            const changes = [];
+            if (a.domain !== b.domain) changes.push(`Domínio: ${a.domain || "—"} → ${b.domain || "—"}`);
+            if (a.range !== b.range) changes.push(`Imagem: ${a.range || "—"} → ${b.range || "—"}`);
+            if (
+                a.functional !== b.functional ||
+                a.symmetric !== b.symmetric ||
+                a.transitive !== b.transitive ||
+                a.irreflexive !== b.irreflexive ||
+                a.asymmetric !== b.asymmetric
+            ) {
+                changes.push("Axiomas lógicos alterados");
+            }
+            if (changes.length > 0) {
+                diff.objProps.set(id, { status: "modified", changes, oldData: a });
+                diff.counts.modified++;
+            }
         }
-        const dx = e.clientX - prevMouse.x;
-        const dy = e.clientY - prevMouse.y;
-        prevMouse.x = e.clientX;
-        prevMouse.y = e.clientY;
+    }
 
-        spherical.theta -= dx * 0.006;
-        spherical.phi -= dy * 0.006;
-        // Limita phi
-        spherical.phi = Math.max(0.15, Math.min(Math.PI - 0.15, spherical.phi));
-        updateCameraPosition();
-    });
-
-    el.addEventListener('wheel', (e) => {
-        e.preventDefault();
-        spherical.radius *= (e.deltaY > 0 ? 1.08 : 0.92);
-        spherical.radius = Math.max(80, Math.min(600, spherical.radius));
-        updateCameraPosition();
-    }, { passive: false });
-
-    // Clique (apenas se não foi arrasto)
-    let downPos = { x: 0, y: 0 };
-    el.addEventListener('mousedown', (e) => { downPos = { x: e.clientX, y: e.clientY }; });
-    el.addEventListener('click', (e) => {
-        const moved = Math.abs(e.clientX - downPos.x) + Math.abs(e.clientY - downPos.y);
-        if (moved > 5) return; // foi arrasto
-
-        const rect = el.getBoundingClientRect();
-        mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-        mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-
-        raycaster.setFromCamera(mouse, camera);
-        const hits = raycaster.intersectObjects(nodeMeshes, false);
-        if (hits.length > 0) {
-            const id = hits[0].object.userData.id;
-            handleNodeClick(id);
-        } else if (selectedNodeId) {
-            selectedNodeId = null;
-            showPlaceholder();
-            updateSelectionVisuals();
+    // DataProperties
+    const allDataIds = new Set([
+        ...Object.keys(baseSnap.dataProps || {}),
+        ...Object.keys(targetSnap.dataProps || {})
+    ]);
+    for (const id of allDataIds) {
+        const a = baseSnap.dataProps[id];
+        const b = targetSnap.dataProps[id];
+        if (!a && b) {
+            diff.dataProps.set(id, { status: "added", changes: ["Atributo adicionado"], oldData: null });
+            diff.counts.added++;
+        } else if (a && !b) {
+            diff.dataProps.set(id, { status: "removed", changes: ["Atributo removido"], oldData: a });
+            diff.counts.removed++;
+        } else if (a && b) {
+            const changes = [];
+            if (a.domain !== b.domain) changes.push(`Domínio: ${a.domain || "—"} → ${b.domain || "—"}`);
+            if (a.range !== b.range) changes.push(`Tipo XSD: ${a.range} → ${b.range}`);
+            if (a.functional !== b.functional) changes.push("Funcionalidade alterada");
+            if (changes.length > 0) {
+                diff.dataProps.set(id, { status: "modified", changes, oldData: a });
+                diff.counts.modified++;
+            }
         }
-    });
+    }
 
-    window.addEventListener('resize', onResize);
+    // Individuals
+    const allIndIds = new Set([
+        ...Object.keys(baseSnap.individuals || {}),
+        ...Object.keys(targetSnap.individuals || {})
+    ]);
+    for (const id of allIndIds) {
+        const a = baseSnap.individuals[id];
+        const b = targetSnap.individuals[id];
+        if (!a && b) {
+            diff.individuals.set(id, { status: "added", changes: ["Objeto adicionado"], oldData: null });
+            diff.counts.added++;
+        } else if (a && !b) {
+            diff.individuals.set(id, { status: "removed", changes: ["Objeto removido"], oldData: a });
+            diff.counts.removed++;
+        } else if (a && b) {
+            const changes = [];
+            if (JSON.stringify(a.types) !== JSON.stringify(b.types)) {
+                changes.push(`Classes: [${a.types.join(", ")}] → [${b.types.join(", ")}]`);
+            }
+            if (JSON.stringify(a.dataValues) !== JSON.stringify(b.dataValues)) {
+                changes.push("Valores de atributos alterados");
+            }
+            if (JSON.stringify(a.objLinks) !== JSON.stringify(b.objLinks)) {
+                changes.push("Relações de objeto alteradas");
+            }
+            if (changes.length > 0) {
+                diff.individuals.set(id, { status: "modified", changes, oldData: a });
+                diff.counts.modified++;
+            }
+        }
+    }
+
+    return diff;
 }
 
-function updateHover(e) {
-    if (!raycaster || nodeMeshes.length === 0) return;
-    const rect = renderer.domElement.getBoundingClientRect();
-    mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-    mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-    raycaster.setFromCamera(mouse, camera);
-    const hits = raycaster.intersectObjects(nodeMeshes, false);
-    renderer.domElement.style.cursor = hits.length > 0 ? 'pointer' : 'grab';
+function recomputeDiff() {
+    if (versionState.history.length === 0 || versionState.activeIndex < 0) {
+        versionState.currentDiff = null;
+        return;
+    }
+    const activeEntry = versionState.history[versionState.activeIndex];
+    const baseIdx =
+        versionState.baseIndex >= 0 && versionState.baseIndex < versionState.history.length
+            ? versionState.baseIndex
+            : versionState.activeIndex;
+    const baseEntry = versionState.history[baseIdx];
+    versionState.currentDiff = computeSnapshotDiff(baseEntry.snapshot, activeEntry.snapshot);
 }
 
-function onResize() {
-    if (!renderer) return;
-    const w = graphArea.clientWidth;
-    const h = graphArea.clientHeight;
-    camera.aspect = w / h;
-    camera.updateProjectionMatrix();
-    renderer.setSize(w, h, false);
+function navigateToVersion(targetIdx) {
+    if (targetIdx < 0 || targetIdx >= versionState.history.length) return;
+    versionState.activeIndex = targetIdx;
+    versionState.baseIndex = Math.max(0, targetIdx - 1);
+    restoreSnapshot(versionState.history[targetIdx].snapshot);
+    recomputeDiff();
+    refreshAllUI();
+    if (uiState.stageActive) {
+        recompute3DLayout();
+        fitCameraToVisibleNodes();
+    }
+    showToast(`Visualizando versão v${versionState.history[targetIdx].version}`);
 }
 
-// ============================================================
-// SELEÇÃO DE NÓ
-// ============================================================
-function handleNodeClick(id) {
-    selectedNodeId = id;
-    const version = getCurrentVersion();
-    const cls = version.classes.find(c => c.id === id);
-    if (cls) showNodeDetails(cls);
-    updateSelectionVisuals();
+/* ==========================================================================
+   4. PARSER E SERIALIZADOR OWL/RDF (XML PURO SEM BIBLIOTECAS)
+   ========================================================================== */
+const ANNOTATION_PREDICATES = new Set([
+    "label", "comment", "seeAlso", "isDefinedBy", "versionInfo",
+    "prefLabel", "altLabel", "hiddenLabel", "notation", "definition", "note",
+    "title", "creator", "contributor", "description", "date", "created",
+    "modified", "identifier", "language", "rights", "subject", "source",
+    "term_status", "preferredNamespacePrefix", "preferredNamespaceUri", "changes",
+    "spacyLabel", "spacyRE", "spacySkip"
+]);
+
+function getAttrLocal(el, attrLocal) {
+    if (!el || !el.attributes) return "";
+    for (let i = 0; i < el.attributes.length; i++) {
+        const a = el.attributes[i];
+        const ln = a.localName || a.name.split(":").pop();
+        if (ln === attrLocal) return a.value;
+    }
+    return "";
 }
 
-function updateSelectionVisuals() {
-    const version = getCurrentVersion();
+function parseOWLRDF(xmlText, sourceLabel = "Arquivo OWL/RDF") {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(xmlText, "application/xml");
+    const parseErr = doc.querySelector("parsererror");
+    if (parseErr) {
+        throw new Error("XML OWL/RDF inválido: " + parseErr.textContent.slice(0, 140));
+    }
 
-    // Esferas
-    nodeMeshes.forEach(mesh => {
-        const isSel = mesh.userData.id === selectedNodeId;
-        const connected = isNodeConnected(mesh.userData.id, selectedNodeId);
-        const mat = mesh.material;
+    ontology.classes.clear();
+    ontology.objProps.clear();
+    ontology.dataProps.clear();
+    ontology.individuals.clear();
+    ensureOwlThing();
 
-        if (isSel) {
-            mat.color.setHex(0xe67e22);
-            mat.emissive.setHex(0x7a3a00);
-        } else if (connected) {
-            mat.color.setHex(0x27ae60);
-            mat.emissive.setHex(0x0d3d20);
+    const root = doc.documentElement;
+    const baseAttr = root.getAttribute("xml:base") || root.getAttribute("xmlns") || "http://example.org/ontocube#";
+    ontology.iri = baseAttr.endsWith("#") || baseAttr.endsWith("/") ? baseAttr : baseAttr + "#";
+
+    const annotationPropIds = new Set();
+    let colorCounter = 0;
+
+    function ensureClass(rawUri) {
+        const id = localName(rawUri);
+        if (!id || id === "Thing" || id === "owl:Thing") return "owl:Thing";
+        if (!ontology.classes.has(id)) {
+            ontology.classes.set(id, {
+                id,
+                label: id,
+                comment: "",
+                parents: new Set(),
+                disjointWith: new Set(),
+                color: pickColor(colorCounter++),
+                expanded: false, // Inicia colapsado para exibir apenas entidades de alto nível
+                hidden: false,
+                x: 0,
+                y: 0,
+                z: 0,
+                cellW: 215,
+                cellD: 100
+            });
+        }
+        return id;
+    }
+
+    const allElements = Array.from(root.children);
+
+    // Passo 1: Identificar AnnotationProperties para não misturar com indivíduos A-BOX
+    for (const el of allElements) {
+        const tag = el.localName || el.nodeName.split(":").pop();
+        const about = getAttrLocal(el, "about") || getAttrLocal(el, "ID");
+        const id = localName(about);
+        if (tag === "AnnotationProperty" && id) {
+            annotationPropIds.add(id);
+        } else if (tag === "Description" && id) {
+            for (const ch of Array.from(el.children)) {
+                const cTag = ch.localName || ch.nodeName.split(":").pop();
+                const res = localName(getAttrLocal(ch, "resource"));
+                if (cTag === "type" && res === "AnnotationProperty") {
+                    annotationPropIds.add(id);
+                }
+            }
+        }
+    }
+
+    // Passo 2: Processar Classes, ObjectProperties, DataProperties e Indivíduos
+    for (const el of allElements) {
+        const tag = el.localName || el.nodeName.split(":").pop();
+        if (tag === "Ontology" || tag === "AnnotationProperty" || tag === "AllDisjointClasses") {
+            if (tag === "AllDisjointClasses") {
+                const members = [];
+                for (const ch of Array.from(el.children)) {
+                    const res = getAttrLocal(ch, "about") || getAttrLocal(ch, "resource");
+                    if (res) members.push(ensureClass(res));
+                }
+                for (let i = 0; i < members.length; i++) {
+                    for (let j = 0; j < members.length; j++) {
+                        if (i !== j && members[i] !== "owl:Thing" && members[j] !== "owl:Thing") {
+                            ontology.classes.get(members[i])?.disjointWith.add(members[j]);
+                        }
+                    }
+                }
+            }
+            continue;
+        }
+
+        const about = getAttrLocal(el, "about") || getAttrLocal(el, "ID");
+        const entityId = localName(about);
+        if (!entityId || annotationPropIds.has(entityId)) continue;
+
+        let inferredKind = tag;
+        const typesFound = [];
+        for (const ch of Array.from(el.children)) {
+            const cTag = ch.localName || ch.nodeName.split(":").pop();
+            if (cTag === "type") {
+                const res = localName(getAttrLocal(ch, "resource"));
+                if (res) typesFound.push(res);
+            }
+        }
+
+        if (tag === "Description") {
+            if (typesFound.includes("Class")) inferredKind = "Class";
+            else if (typesFound.includes("ObjectProperty")) inferredKind = "ObjectProperty";
+            else if (typesFound.includes("DatatypeProperty")) inferredKind = "DatatypeProperty";
+            else if (typesFound.includes("AnnotationProperty")) continue;
+            else if (typesFound.length > 0) inferredKind = "NamedIndividual";
+            else continue;
+        }
+
+        if (inferredKind === "Class") {
+            const cid = ensureClass(entityId);
+            if (cid === "owl:Thing") continue;
+            const cls = ontology.classes.get(cid);
+
+            for (const ch of Array.from(el.children)) {
+                const cTag = ch.localName || ch.nodeName.split(":").pop();
+                const res = getAttrLocal(ch, "resource");
+                if (cTag === "label" && ch.textContent.trim()) {
+                    cls.label = ch.textContent.trim();
+                } else if (cTag === "comment" && ch.textContent.trim()) {
+                    cls.comment = ch.textContent.trim();
+                } else if (cTag === "subClassOf" && res) {
+                    const pid = ensureClass(res);
+                    if (pid && pid !== cid) cls.parents.add(pid);
+                } else if (cTag === "disjointWith" && res) {
+                    const did = ensureClass(res);
+                    if (did && did !== cid && did !== "owl:Thing") {
+                        cls.disjointWith.add(did);
+                        ontology.classes.get(did)?.disjointWith.add(cid);
+                    }
+                }
+            }
+        } else if (inferredKind === "ObjectProperty") {
+            const op = {
+                id: entityId,
+                label: entityId,
+                domain: "",
+                range: "",
+                inverseOf: "",
+                functional: typesFound.includes("FunctionalProperty"),
+                symmetric: typesFound.includes("SymmetricProperty"),
+                transitive: typesFound.includes("TransitiveProperty"),
+                irreflexive: typesFound.includes("IrreflexiveProperty"),
+                asymmetric: typesFound.includes("AsymmetricProperty")
+            };
+            for (const ch of Array.from(el.children)) {
+                const cTag = ch.localName || ch.nodeName.split(":").pop();
+                const res = getAttrLocal(ch, "resource");
+                if (cTag === "label" && ch.textContent.trim()) op.label = ch.textContent.trim();
+                else if (cTag === "domain" && res) op.domain = ensureClass(res);
+                else if (cTag === "range" && res) op.range = ensureClass(res);
+                else if (cTag === "inverseOf" && res) op.inverseOf = localName(res);
+            }
+            ontology.objProps.set(entityId, op);
+        } else if (inferredKind === "DatatypeProperty") {
+            const dp = {
+                id: entityId,
+                label: entityId,
+                domain: "",
+                range: "xsd:string",
+                functional: typesFound.includes("FunctionalProperty")
+            };
+            for (const ch of Array.from(el.children)) {
+                const cTag = ch.localName || ch.nodeName.split(":").pop();
+                const res = getAttrLocal(ch, "resource");
+                if (cTag === "label" && ch.textContent.trim()) dp.label = ch.textContent.trim();
+                else if (cTag === "domain" && res) dp.domain = ensureClass(res);
+                else if (cTag === "range" && res) {
+                    const dt = localName(res);
+                    dp.range = dt.startsWith("xsd:") ? dt : "xsd:" + dt;
+                }
+            }
+            ontology.dataProps.set(entityId, dp);
         } else {
-            mat.color.setHex(0x2a5298);
-            mat.emissive.setHex(0x0e2a5c);
-        }
+            // Indivíduo (A-BOX)
+            const filteredTypes = typesFound
+                .filter((t) => !["NamedIndividual", "Thing", "owl:Thing", "Resource", "Ontology"].includes(t))
+                .map((t) => ensureClass(t));
 
-        // Halo
-        if (mesh.userData.halo) {
-            mesh.userData.halo.material.opacity = isSel ? 0.35 : 0.12;
-            mesh.userData.halo.material.color.setHex(
-                isSel ? 0xffb060 : 0x6ea8ff
-            );
-        }
-    });
+            if (filteredTypes.length === 0 && inferredKind === "NamedIndividual") {
+                filteredTypes.push("owl:Thing");
+            }
+            if (filteredTypes.length === 0) continue;
 
-    // Arestas
-    relationMeshes.forEach(obj => {
-        const ud = obj.userData;
-        if (!ud || (!ud.subject && !ud.object)) return;
-        const active = selectedNodeId &&
-            (ud.subject === selectedNodeId || ud.object === selectedNodeId);
-        if (obj.geometry.type === 'CylinderGeometry') {
-            obj.material.color.setHex(active ? 0x27ae60 : 0x3f6fb5);
-            obj.material.emissive.setHex(active ? 0x0d3d20 : 0x0a1e3c);
-        } else if (obj.geometry.type === 'ConeGeometry') {
-            obj.material.color.setHex(active ? 0x2ecc71 : 0x6ea8ff);
-        }
-    });
+            const ind = {
+                id: entityId,
+                label: entityId,
+                types: new Set(filteredTypes),
+                dataValues: [],
+                objLinks: [],
+                hidden: false,
+                x: 0,
+                y: 0,
+                z: 0
+            };
 
-    // Rótulos de predicado — realça os ativos
-    version.relations.forEach((rel, idx) => {
-        // encontra sprite correspondente por posição (na ordem)
-    });
-    predicateSprites.forEach((sprite, i) => {
-        // heurística: percorre relationMeshes agrupados
-    });
+            for (const ch of Array.from(el.children)) {
+                const cTag = ch.localName || ch.nodeName.split(":").pop();
+                if (cTag === "type") continue;
+                if (cTag === "label" && ch.textContent.trim()) {
+                    ind.label = ch.textContent.trim();
+                    continue;
+                }
+                if (ANNOTATION_PREDICATES.has(cTag) || annotationPropIds.has(cTag)) continue;
 
-    // Melhor: percorre relationMeshes (tubos) e ajusta predSprite
-    relationMeshes.forEach(obj => {
-        if (obj.userData && obj.userData.predSprite) {
-            const ud = obj.userData;
-            const active = selectedNodeId &&
-                (ud.subject === selectedNodeId || ud.object === selectedNodeId);
-            obj.userData.predSprite.material.opacity = active ? 1 : 0.7;
+                const res = getAttrLocal(ch, "resource");
+                if (res) {
+                    ind.objLinks.push({ prop: cTag, target: localName(res) });
+                } else if (ch.textContent !== undefined) {
+                    const dtAttr = getAttrLocal(ch, "datatype");
+                    const dt = dtAttr ? (localName(dtAttr).startsWith("xsd:") ? localName(dtAttr) : "xsd:" + localName(dtAttr)) : "xsd:string";
+                    ind.dataValues.push({ prop: cTag, value: ch.textContent.trim(), datatype: dt });
+                }
+            }
+            ontology.individuals.set(entityId, ind);
         }
-    });
+    }
+
+    // Garante que classes sem pais explícitos estejam ligadas a owl:Thing
+    for (const [cid, cls] of ontology.classes.entries()) {
+        if (cid === "owl:Thing") continue;
+        if (cls.parents.size === 0) cls.parents.add("owl:Thing");
+        cls.expanded = false;
+    }
+
+    uiState.selectedId = null;
+    uiState.selectedKind = null;
+    uiState.treeRootId = null;
+    uiState.stageActive = false;
+
+    const isFirstLoad = versionState.history.length === 0;
+    createVersionSnapshot(`Carregado: ${sourceLabel}`, isFirstLoad);
+    refreshAllUI();
+    showToast(`Ontologia carregada (${ontology.classes.size - 1} classes, ${ontology.objProps.size} relações). Selecione uma classe na árvore.`);
 }
 
-function isNodeConnected(id, selId) {
-    if (!selId || id === selId) return false;
-    const version = getCurrentVersion();
-    return version.relations.some(r =>
-        (r.subject === selId && r.object === id) ||
-        (r.object === selId && r.subject === id)
+function serializeToOWLRDF() {
+    const lines = [];
+    lines.push(`<?xml version="1.0" encoding="UTF-8"?>`);
+    lines.push(`<rdf:RDF xmlns="${escapeHtml(ontology.iri)}"`);
+    lines.push(`     xml:base="${escapeHtml(ontology.iri.replace(/#$/, ""))}"`);
+    lines.push(`     xmlns:owl="http://www.w3.org/2002/07/owl#"`);
+    lines.push(`     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"`);
+    lines.push(`     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"`);
+    lines.push(`     xmlns:xsd="http://www.w3.org/2001/XMLSchema#">`);
+    lines.push(`  <owl:Ontology rdf:about="${escapeHtml(ontology.iri.replace(/#$/, ""))}"/>`);
+    lines.push("");
+
+    for (const [id, cls] of ontology.classes.entries()) {
+        if (id === "owl:Thing") continue;
+        lines.push(`  <owl:Class rdf:about="#${escapeHtml(id)}">`);
+        if (cls.label && cls.label !== id) {
+            lines.push(`    <rdfs:label>${escapeHtml(cls.label)}</rdfs:label>`);
+        }
+        if (cls.comment) {
+            lines.push(`    <rdfs:comment>${escapeHtml(cls.comment)}</rdfs:comment>`);
+        }
+        for (const p of cls.parents) {
+            if (p && p !== "owl:Thing") {
+                lines.push(`    <rdfs:subClassOf rdf:resource="#${escapeHtml(p)}"/>`);
+            }
+        }
+        for (const d of cls.disjointWith) {
+            if (d && d !== "owl:Thing") {
+                lines.push(`    <owl:disjointWith rdf:resource="#${escapeHtml(d)}"/>`);
+            }
+        }
+        lines.push(`  </owl:Class>`);
+    }
+
+    lines.push("");
+    for (const [id, op] of ontology.objProps.entries()) {
+        lines.push(`  <owl:ObjectProperty rdf:about="#${escapeHtml(id)}">`);
+        if (op.label && op.label !== id) lines.push(`    <rdfs:label>${escapeHtml(op.label)}</rdfs:label>`);
+        if (op.functional) lines.push(`    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>`);
+        if (op.symmetric) lines.push(`    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#SymmetricProperty"/>`);
+        if (op.transitive) lines.push(`    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#TransitiveProperty"/>`);
+        if (op.irreflexive) lines.push(`    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#IrreflexiveProperty"/>`);
+        if (op.asymmetric) lines.push(`    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AsymmetricProperty"/>`);
+        if (op.domain && op.domain !== "owl:Thing") lines.push(`    <rdfs:domain rdf:resource="#${escapeHtml(op.domain)}"/>`);
+        if (op.range && op.range !== "owl:Thing") lines.push(`    <rdfs:range rdf:resource="#${escapeHtml(op.range)}"/>`);
+        if (op.inverseOf) lines.push(`    <owl:inverseOf rdf:resource="#${escapeHtml(op.inverseOf)}"/>`);
+        lines.push(`  </owl:ObjectProperty>`);
+    }
+
+    lines.push("");
+    for (const [id, dp] of ontology.dataProps.entries()) {
+        lines.push(`  <owl:DatatypeProperty rdf:about="#${escapeHtml(id)}">`);
+        if (dp.label && dp.label !== id) lines.push(`    <rdfs:label>${escapeHtml(dp.label)}</rdfs:label>`);
+        if (dp.functional) lines.push(`    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>`);
+        if (dp.domain && dp.domain !== "owl:Thing") lines.push(`    <rdfs:domain rdf:resource="#${escapeHtml(dp.domain)}"/>`);
+        if (dp.range) {
+            const xsdName = dp.range.replace(/^xsd:/, "");
+            lines.push(`    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#${escapeHtml(xsdName)}"/>`);
+        }
+        lines.push(`  </owl:DatatypeProperty>`);
+    }
+
+    lines.push("");
+    for (const [id, ind] of ontology.individuals.entries()) {
+        lines.push(`  <owl:NamedIndividual rdf:about="#${escapeHtml(id)}">`);
+        if (ind.label && ind.label !== id) lines.push(`    <rdfs:label>${escapeHtml(ind.label)}</rdfs:label>`);
+        for (const t of ind.types) {
+            if (t && t !== "owl:Thing") {
+                lines.push(`    <rdf:type rdf:resource="#${escapeHtml(t)}"/>`);
+            }
+        }
+        for (const dv of ind.dataValues) {
+            const xsdName = (dv.datatype || "xsd:string").replace(/^xsd:/, "");
+            lines.push(`    <${escapeHtml(dv.prop)} rdf:datatype="http://www.w3.org/2001/XMLSchema#${escapeHtml(xsdName)}">${escapeHtml(dv.value)}</${escapeHtml(dv.prop)}>`);
+        }
+        for (const lk of ind.objLinks) {
+            lines.push(`    <${escapeHtml(lk.prop)} rdf:resource="#${escapeHtml(lk.target)}"/>`);
+        }
+        lines.push(`  </owl:NamedIndividual>`);
+    }
+
+    lines.push(`</rdf:RDF>`);
+    return lines.join("\n");
+}
+
+/* ==========================================================================
+   5. VALIDADOR DE REGRAS DA ONTOLOGIA
+   ========================================================================== */
+function getAllAncestors(classId, visited = new Set()) {
+    if (visited.has(classId)) return visited;
+    visited.add(classId);
+    const cls = ontology.classes.get(classId);
+    if (!cls) return visited;
+    for (const p of cls.parents) {
+        getAllAncestors(p, visited);
+    }
+    return visited;
+}
+
+function isSubtypeOrEqual(subId, supId) {
+    if (!subId || !supId || supId === "owl:Thing") return true;
+    if (subId === supId) return true;
+    return getAllAncestors(subId).has(supId);
+}
+
+function checkXsdLexical(value, datatype) {
+    const dt = (datatype || "xsd:string").replace(/^xsd:/, "");
+    const v = String(value ?? "").trim();
+    if (dt === "integer" || dt === "int" || dt === "long") return /^-?\d+$/.test(v);
+    if (dt === "decimal" || dt === "float" || dt === "double") return /^-?\d+(\.\d+)?$/.test(v);
+    if (dt === "boolean") return /^(true|false|1|0)$/i.test(v);
+    if (dt === "date") return /^\d{4}-\d{2}-\d{2}$/.test(v);
+    if (dt === "dateTime") return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(v);
+    return true;
+}
+
+function validateOntologyRules() {
+    const issues = [];
+
+    // 1. Ciclos em rdfs:subClassOf
+    for (const [cid, cls] of ontology.classes.entries()) {
+        if (cid === "owl:Thing") continue;
+        const stack = Array.from(cls.parents);
+        const seen = new Set();
+        while (stack.length > 0) {
+            const cur = stack.pop();
+            if (cur === cid) {
+                issues.push({
+                    severity: "error",
+                    rule: "Ciclo Hierárquico (rdfs:subClassOf)",
+                    entityId: cid,
+                    entityKind: "class",
+                    message: `A classe "${cls.label}" possui um ciclo na sua cadeia de superclasses.`
+                });
+                break;
+            }
+            if (!seen.has(cur)) {
+                seen.add(cur);
+                const pObj = ontology.classes.get(cur);
+                if (pObj) stack.push(...pObj.parents);
+            }
+        }
+    }
+
+    // 2. Disjunção violada no T-BOX (subclasse comum a duas classes disjuntas)
+    for (const [cid, cls] of ontology.classes.entries()) {
+        if (cid === "owl:Thing") continue;
+        const ancestors = Array.from(getAllAncestors(cid));
+        for (let i = 0; i < ancestors.length; i++) {
+            for (let j = i + 1; j < ancestors.length; j++) {
+                const cA = ontology.classes.get(ancestors[i]);
+                if (cA && cA.disjointWith.has(ancestors[j])) {
+                    issues.push({
+                        severity: "error",
+                        rule: "Conflito de Disjunção (T-BOX)",
+                        entityId: cid,
+                        entityKind: "class",
+                        message: `A classe "${cls.label}" herda simultaneamente de "${ancestors[i]}" e "${ancestors[j]}", que são disjuntas.`
+                    });
+                }
+            }
+        }
+    }
+
+    // 3. Domínio e Imagem das ObjectProperties e DataProperties
+    for (const [pid, op] of ontology.objProps.entries()) {
+        if (op.domain && op.domain !== "owl:Thing" && !ontology.classes.has(op.domain)) {
+            issues.push({
+                severity: "warning",
+                rule: "Domínio Inexistente",
+                entityId: pid,
+                entityKind: "objProp",
+                message: `Relação "${op.label}" referencia domínio inexistente "${op.domain}".`
+            });
+        }
+        if (op.range && op.range !== "owl:Thing" && !ontology.classes.has(op.range)) {
+            issues.push({
+                severity: "warning",
+                rule: "Imagem Inexistente",
+                entityId: pid,
+                entityKind: "objProp",
+                message: `Relação "${op.label}" referencia imagem inexistente "${op.range}".`
+            });
+        }
+    }
+
+    // 4. Indivíduos A-BOX: Disjunção, Tipagem XSD, Domínio, Imagem e Características de Propriedades
+    for (const [iid, ind] of ontology.individuals.entries()) {
+        const allTypes = new Set();
+        for (const t of ind.types) {
+            getAllAncestors(t, allTypes);
+        }
+        const typeArr = Array.from(allTypes);
+        for (let i = 0; i < typeArr.length; i++) {
+            for (let j = i + 1; j < typeArr.length; j++) {
+                const cA = ontology.classes.get(typeArr[i]);
+                if (cA && cA.disjointWith.has(typeArr[j])) {
+                    issues.push({
+                        severity: "error",
+                        rule: "Violação de Disjunção (A-BOX)",
+                        entityId: iid,
+                        entityKind: "individual",
+                        message: `Objeto "${ind.label}" pertence às classes disjuntas "${typeArr[i]}" e "${typeArr[j]}".`
+                    });
+                }
+            }
+        }
+
+        // DataValues
+        const dataCountByProp = new Map();
+        for (const dv of ind.dataValues) {
+            dataCountByProp.set(dv.prop, (dataCountByProp.get(dv.prop) || 0) + 1);
+            const dp = ontology.dataProps.get(dv.prop);
+            const expectedDt = dp ? dp.range : dv.datatype;
+            if (!checkXsdLexical(dv.value, expectedDt)) {
+                issues.push({
+                    severity: "error",
+                    rule: "Tipo Literal XSD Inválido",
+                    entityId: iid,
+                    entityKind: "individual",
+                    message: `Atributo "${dv.prop}" em "${ind.label}" possui valor "${dv.value}" incompatível com ${expectedDt}.`
+                });
+            }
+            if (dp && dp.domain && dp.domain !== "owl:Thing" && !allTypes.has(dp.domain)) {
+                issues.push({
+                    severity: "warning",
+                    rule: "Violação de rdfs:domain (DataProperty)",
+                    entityId: iid,
+                    entityKind: "individual",
+                    message: `Objeto "${ind.label}" usa "${dp.label}" cujo domínio esperado é "${dp.domain}".`
+                });
+            }
+        }
+        for (const [propName, count] of dataCountByProp.entries()) {
+            const dp = ontology.dataProps.get(propName);
+            if (dp && dp.functional && count > 1) {
+                issues.push({
+                    severity: "error",
+                    rule: "DataProperty Funcional Violada",
+                    entityId: iid,
+                    entityKind: "individual",
+                    message: `Atributo funcional "${dp.label}" possui ${count} valores em "${ind.label}".`
+                });
+            }
+        }
+
+        // ObjectLinks
+        const objCountByProp = new Map();
+        for (const lk of ind.objLinks) {
+            objCountByProp.set(lk.prop, (objCountByProp.get(lk.prop) || 0) + 1);
+            const op = ontology.objProps.get(lk.prop);
+            const targetInd = ontology.individuals.get(lk.target);
+            if (!targetInd) {
+                issues.push({
+                    severity: "warning",
+                    rule: "Destino Inexistente (A-BOX)",
+                    entityId: iid,
+                    entityKind: "individual",
+                    message: `Relação "${lk.prop}" em "${ind.label}" aponta para indivíduo desconhecido "${lk.target}".`
+                });
+            }
+            if (op) {
+                if (op.domain && op.domain !== "owl:Thing" && !allTypes.has(op.domain)) {
+                    issues.push({
+                        severity: "warning",
+                        rule: "Violação de rdfs:domain",
+                        entityId: iid,
+                        entityKind: "individual",
+                        message: `Objeto "${ind.label}" usa relação "${op.label}" fora do domínio "${op.domain}".`
+                    });
+                }
+                if (op.range && op.range !== "owl:Thing" && targetInd) {
+                    const targetTypes = new Set();
+                    for (const tt of targetInd.types) getAllAncestors(tt, targetTypes);
+                    if (!targetTypes.has(op.range)) {
+                        issues.push({
+                            severity: "warning",
+                            rule: "Violação de rdfs:range",
+                            entityId: iid,
+                            entityKind: "individual",
+                            message: `Destino "${targetInd.label}" de "${op.label}" não é instância de "${op.range}".`
+                        });
+                    }
+                }
+                if (op.irreflexive && lk.target === iid) {
+                    issues.push({
+                        severity: "error",
+                        rule: "Propriedade Irreflexiva Violada",
+                        entityId: iid,
+                        entityKind: "individual",
+                        message: `Relação irreflexiva "${op.label}" liga "${ind.label}" a si mesmo.`
+                    });
+                }
+                if (op.asymmetric && targetInd) {
+                    const hasReverse = targetInd.objLinks.some((r) => r.prop === lk.prop && r.target === iid);
+                    if (hasReverse) {
+                        issues.push({
+                            severity: "error",
+                            rule: "Propriedade Assimétrica Violada",
+                            entityId: iid,
+                            entityKind: "individual",
+                            message: `Relação assimétrica "${op.label}" ocorre nos dois sentidos entre "${ind.label}" e "${targetInd.label}".`
+                        });
+                    }
+                }
+            }
+        }
+        for (const [propName, count] of objCountByProp.entries()) {
+            const op = ontology.objProps.get(propName);
+            if (op && op.functional && count > 1) {
+                issues.push({
+                    severity: "error",
+                    rule: "ObjectProperty Funcional Violada",
+                    entityId: iid,
+                    entityKind: "individual",
+                    message: `Relação funcional "${op.label}" possui ${count} destinos em "${ind.label}".`
+                });
+            }
+        }
+    }
+
+    validationIssues = issues;
+    const badge = document.getElementById("valErrorBadge");
+    badge.textContent = String(issues.length);
+    badge.className = issues.length === 0 ? "badge-pill ok" : "badge-pill err";
+    renderValidationReport();
+}
+
+function renderValidationReport() {
+    const sumEl = document.getElementById("validatorSummary");
+    const listEl = document.getElementById("validatorIssuesList");
+    if (!sumEl || !listEl) return;
+
+    if (validationIssues.length === 0) {
+        sumEl.innerHTML = `<span style="color:var(--accent-emerald);">✅ Nenhuma violação de regra encontrada na ontologia.</span>`;
+        listEl.innerHTML = "";
+        return;
+    }
+
+    sumEl.innerHTML = `<span style="color:var(--accent-rose);">⚠️ ${validationIssues.length} alerta(s) / violação(ões) detectada(s):</span>`;
+    listEl.innerHTML = "";
+
+    for (const iss of validationIssues) {
+        const row = document.createElement("div");
+        row.className = "section-card";
+        row.style.borderLeft = `3px solid ${iss.severity === "error" ? "var(--accent-rose)" : "var(--accent-amber)"}`;
+        row.style.cursor = "pointer";
+        row.innerHTML = `
+          <div style="font-size:11px; font-weight:700; color:${iss.severity === "error" ? "#fda4af" : "#fde68a"};">
+            ${escapeHtml(iss.rule)}
+          </div>
+          <div style="font-size:11.5px; color:var(--text-main); line-height:1.4;">
+            ${escapeHtml(iss.message)}
+          </div>
+        `;
+        row.onclick = () => {
+            if (iss.entityId && iss.entityKind) selectEntity(iss.entityKind, iss.entityId, true);
+        };
+        listEl.appendChild(row);
+    }
+}
+
+/* ==========================================================================
+   6. LAYOUT 3D: ÁRVORE HIERÁRQUICA EM -Y (PAI ACIMA, FILHOS LADO A LADO)
+   ========================================================================== */
+function getDirectSubclasses(parentId) {
+    const subs = [];
+    for (const [cid, cls] of ontology.classes.entries()) {
+        if (cid === "owl:Thing") continue;
+        if (cls.parents.has(parentId)) subs.push(cid);
+    }
+    return subs.sort((a, b) => a.localeCompare(b));
+}
+
+function getVisibleExpandedClasses() {
+    const visible = new Set();
+    if (uiState.showOwlThing) visible.add("owl:Thing");
+
+    function visit(cid) {
+        const cls = ontology.classes.get(cid);
+        if (!cls || cls.hidden) return;
+        if (cid !== "owl:Thing") visible.add(cid);
+        if (cid === "owl:Thing" || cls.expanded) {
+            for (const sub of getDirectSubclasses(cid)) {
+                if (!visible.has(sub)) visit(sub);
+            }
+        }
+    }
+
+    visit("owl:Thing");
+
+    // Inclui também classes órfãs ou com pais ocultos
+    for (const [cid, cls] of ontology.classes.entries()) {
+        if (cid === "owl:Thing" || cls.hidden) continue;
+        const hasVisibleParent = Array.from(cls.parents).some(
+            (p) => p === "owl:Thing" || visible.has(p)
+        );
+        if (!hasVisibleParent && !visible.has(cid)) {
+            visit(cid);
+        }
+    }
+    return visible;
+}
+
+function computeTreeSubtree(cid, visibleClasses, placed, nodeW, nodeD, gapX, gapZ) {
+    placed.add(cid);
+    const cls = ontology.classes.get(cid);
+    const children =
+        cls && cls.expanded
+            ? getDirectSubclasses(cid).filter((sub) => visibleClasses.has(sub) && !placed.has(sub))
+            : [];
+
+    if (children.length === 0) {
+        return { id: cid, width: nodeW, depth: nodeD, children: [] };
+    }
+
+    const childBoxes = children.map((ch) =>
+        computeTreeSubtree(ch, visibleClasses, placed, nodeW, nodeD, gapX, gapZ)
     );
+
+    // Todos os filhos diretos ficam lado a lado em uma única linha horizontal (sem grid)
+    const totalChildrenW =
+        childBoxes.reduce((acc, b) => acc + b.width, 0) + (childBoxes.length - 1) * gapX;
+    const maxChildDepth = childBoxes.reduce((acc, b) => Math.max(acc, b.depth), 0);
+
+    return {
+        id: cid,
+        width: Math.max(nodeW, totalChildrenW),
+        depth: nodeD + gapZ + maxChildDepth,
+        children: childBoxes
+    };
 }
 
-// ============================================================
-// DETALHES
-// ============================================================
-function showPlaceholder() {
-    detailArea.innerHTML = `
-                <div class="placeholder">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <circle cx="12" cy="12" r="10"/>
-                        <path d="M12 16v-4M12 8h.01"/>
-                    </svg>
-                    <p>Clique em uma esfera no grafo 3D para ver seus detalhes e relações.</p>
-                </div>
-            `;
+function assignTreeSubtreeCoords(box, centerX, startZ, startY, levelStepY, nodeW, nodeD, gapX, gapZ) {
+    const cls = ontology.classes.get(box.id);
+    if (cls) {
+        cls.x = centerX;
+        cls.y = startY;
+        cls.z = startZ;
+        cls.cellW = nodeW + gapX * 0.85;
+        cls.cellD = nodeD + gapZ * 0.85;
+    }
+
+    if (!box.children || box.children.length === 0) return;
+
+    // Pai fica em startY (nível acima) e TODOS os filhos ficam lado a lado no mesmo nível Y (startY - levelStepY)
+    const childY = startY - levelStepY;
+    const childZ = startZ + gapZ;
+    const totalChildrenW =
+        box.children.reduce((acc, b) => acc + b.width, 0) + (box.children.length - 1) * gapX;
+    let curLeftX = centerX - totalChildrenW / 2;
+
+    for (const ch of box.children) {
+        const chCenterX = curLeftX + ch.width / 2;
+        assignTreeSubtreeCoords(ch, chCenterX, childZ, childY, levelStepY, nodeW, nodeD, gapX, gapZ);
+        curLeftX += ch.width + gapX;
+    }
 }
 
-function showNodeDetails(cls) {
-    const version = getCurrentVersion();
-    const outgoing = version.relations.filter(r => r.subject === cls.id);
-    const incoming = version.relations.filter(r => r.object === cls.id);
+function layoutABoxIndividuals(aboxY, sXZ, sY) {
+    const inds = Array.from(ontology.individuals.values()).filter((ind) => !ind.hidden);
+    if (inds.length === 0) return;
 
-    let html = `<div class="detail-card">
-                <h3>${cls.label}</h3>
-                <span class="detail-version-tag">${version.id}</span>
-                <p class="detail-desc">Classe da ontologia escolar presente nesta versão.</p>
-            `;
+    const indW = 190 * sXZ;
+    const indD = 95 * sXZ;
+    const cols = Math.max(1, Math.ceil(Math.sqrt(inds.length)));
+    const rows = Math.ceil(inds.length / cols);
 
-    if (outgoing.length > 0) {
-        html += `<div class="detail-section-title">Relações de saída</div>
-                <ul class="relation-list">`;
-        outgoing.forEach(r => {
-            html += `<li>
-                        <span class="rel-subject">${r.subject}</span>
-                        <span class="rel-predicate">${r.predicate}</span>
-                        <span class="rel-object">${r.object}</span>
-                    </li>`;
-        });
-        html += `</ul>`;
-    }
-
-    if (incoming.length > 0) {
-        html += `<div class="detail-section-title">Relações de entrada</div>
-                <ul class="relation-list">`;
-        incoming.forEach(r => {
-            html += `<li>
-                        <span class="rel-subject">${r.subject}</span>
-                        <span class="rel-predicate">${r.predicate}</span>
-                        <span class="rel-object">${r.object}</span>
-                    </li>`;
-        });
-        html += `</ul>`;
-    }
-
-    html += `<div class="detail-section-title">Classes nesta versão</div>
-            <div class="class-list">`;
-    version.classes.forEach(c => {
-        const isActive = c.id === cls.id;
-        html += `<span class="class-tag" style="${isActive ? 'background:#2a5298;color:#fff;border-color:#2a5298;' : ''}">${c.label}</span>`;
+    inds.forEach((ind, idx) => {
+        const r = Math.floor(idx / cols);
+        const c = idx % cols;
+        ind.x = (c - (cols - 1) / 2) * (indW + 50 * sXZ);
+        ind.y = aboxY;
+        ind.z = (r - (rows - 1) / 2) * (indD + 50 * sXZ);
     });
-    html += `</div></div>`;
-
-    detailArea.innerHTML = html;
 }
 
-// ============================================================
-// NAVEGAÇÃO
-// ============================================================
-btnPrev.addEventListener('click', () => {
-    if (currentVersionIndex > 0) selectVersion(currentVersionIndex - 1);
-});
-btnNext.addEventListener('click', () => {
-    if (currentVersionIndex < ontologyVersions.length - 1) selectVersion(currentVersionIndex + 1);
-});
+function recomputeForestLayout() {
+    uiState.forestPlanes = [];
+    const visibleClasses = getVisibleExpandedClasses();
+    const sXZ = uiState.spreadXZ;
+    const sY = uiState.spreadY;
 
-// ============================================================
-// LOOP DE ANIMAÇÃO
-// ============================================================
-function animate() {
-    animationId = requestAnimationFrame(animate);
+    const topRoots = getDirectSubclasses("owl:Thing").filter((id) => visibleClasses.has(id));
+    const placed = new Set(["owl:Thing"]);
+    const nodeW = 215 * sXZ;
+    const nodeD = 100 * sXZ;
+    const gapX = 56 * sXZ;
+    const gapZ = 110 * sXZ;
+    const levelStepY = 165 * sY;
 
-    // Rotação suave automática dos rótulos (billboard já é automático)
-    // Pulso leve nas esferas selecionadas
-    const t = performance.now() * 0.003;
-    nodeMeshes.forEach(mesh => {
-        if (mesh.userData.id === selectedNodeId) {
-            const s = 1 + Math.sin(t) * 0.06;
-            mesh.scale.setScalar(s);
-            if (mesh.userData.halo) {
-                mesh.userData.halo.scale.setScalar(s * 1.05);
+    const treeBoxes = topRoots.map((r) =>
+        computeTreeSubtree(r, visibleClasses, placed, nodeW, nodeD, gapX, gapZ)
+    );
+
+    for (const cid of visibleClasses) {
+        if (!placed.has(cid)) {
+            treeBoxes.push(computeTreeSubtree(cid, visibleClasses, placed, nodeW, nodeD, gapX, gapZ));
+        }
+    }
+
+    const treeGapX = 140 * sXZ;
+    const totalForestW =
+        treeBoxes.reduce((acc, b) => acc + b.width, 0) + Math.max(0, treeBoxes.length - 1) * treeGapX;
+    let cursorX = -totalForestW / 2;
+    const baseTopY = 340 * sY;
+
+    treeBoxes.forEach((box, idx) => {
+        const cx = cursorX + box.width / 2;
+        assignTreeSubtreeCoords(box, cx, 0, baseTopY, levelStepY, nodeW, nodeD, gapX, gapZ);
+        const rootCls = ontology.classes.get(box.id);
+        uiState.forestPlanes.push({
+            id: box.id,
+            label: rootCls ? rootCls.label : box.id,
+            color: rootCls ? rootCls.color : PALETTE[idx % PALETTE.length],
+            minX: cursorX - 30 * sXZ,
+            maxX: cursorX + box.width + 30 * sXZ,
+            minZ: -nodeD * 0.75,
+            maxZ: box.depth + nodeD * 0.75,
+            y: baseTopY
+        });
+        cursorX += box.width + treeGapX;
+    });
+
+    const thing = ontology.classes.get("owl:Thing");
+    if (thing) {
+        thing.x = 0;
+        thing.y = baseTopY + levelStepY * 1.3;
+        thing.z = -gapZ * 1.2;
+        thing.cellW = nodeW;
+        thing.cellD = nodeD;
+    }
+
+    let minTBoxY = baseTopY;
+    for (const cid of visibleClasses) {
+        const c = ontology.classes.get(cid);
+        if (c && c.y < minTBoxY) minTBoxY = c.y;
+    }
+    layoutABoxIndividuals(minTBoxY - 220 * sY, sXZ, sY);
+}
+
+function isClassDescendantOf(childId, ancestorId, visited = new Set()) {
+    if (childId === ancestorId) return true;
+    if (visited.has(childId)) return false;
+    visited.add(childId);
+    const cls = ontology.classes.get(childId);
+    if (!cls) return false;
+    for (const pid of cls.parents) {
+        if (isClassDescendantOf(pid, ancestorId, visited)) return true;
+    }
+    return false;
+}
+
+function updateFocusedLayout() {
+    const sXZ = uiState.spreadXZ;
+    const sY = uiState.spreadY;
+
+    if (uiState.selectedKind === "class" && uiState.selectedId && ontology.classes.has(uiState.selectedId)) {
+        let activeRootId = uiState.selectedId;
+        if (
+            uiState.treeRootId &&
+            ontology.classes.has(uiState.treeRootId) &&
+            isClassDescendantOf(uiState.selectedId, uiState.treeRootId)
+        ) {
+            activeRootId = uiState.treeRootId;
+        } else {
+            uiState.treeRootId = uiState.selectedId;
+        }
+
+        const rootCls = ontology.classes.get(activeRootId);
+        const nodeW = 215 * sXZ;
+        const nodeD = 100 * sXZ;
+        const gapX = 56 * sXZ;
+        const gapZ = 110 * sXZ;
+        const levelStepY = 165 * sY;
+        const rootY = 340 * sY;
+
+        const visibleSet = getVisibleExpandedClasses();
+        const placed = new Set(["owl:Thing"]);
+        const subTree = computeTreeSubtree(activeRootId, visibleSet, placed, nodeW, nodeD, gapX, gapZ);
+        assignTreeSubtreeCoords(subTree, 0, 0, rootY, levelStepY, nodeW, nodeD, gapX, gapZ);
+
+        rootCls.x = 0;
+        rootCls.y = rootY;
+        rootCls.z = 0;
+
+        // Superclasses da raiz ativa ficam acima em +Y
+        const parents = Array.from(rootCls.parents).filter(
+            (p) => (p !== "owl:Thing" || uiState.showOwlThing) && ontology.classes.has(p)
+        );
+        parents.forEach((pid, idx) => {
+            const pCls = ontology.classes.get(pid);
+            pCls.x = (idx - (parents.length - 1) / 2) * (nodeW + gapX * 1.4);
+            pCls.y = rootY + levelStepY;
+            pCls.z = -gapZ;
+            pCls.cellW = nodeW + gapX;
+            pCls.cellD = nodeD + gapZ;
+        });
+
+        // Classes relacionadas por ObjectProperty que não fazem parte da subárvore ficam distribuídas lateralmente
+        const relatedIds = new Set();
+        for (const op of ontology.objProps.values()) {
+            if (op.domain === uiState.selectedId && op.range && op.range !== uiState.selectedId) {
+                relatedIds.add(op.range);
+            }
+            if (op.range === uiState.selectedId && op.domain && op.domain !== uiState.selectedId) {
+                relatedIds.add(op.domain);
+            }
+        }
+        const sideRel = Array.from(relatedIds).filter(
+            (rid) => !placed.has(rid) && !parents.includes(rid) && ontology.classes.has(rid)
+        );
+        const treeHalfW = subTree.width / 2 + nodeW + gapX * 1.2;
+        sideRel.forEach((rid, idx) => {
+            const rCls = ontology.classes.get(rid);
+            const side = idx % 2 === 0 ? 1 : -1;
+            const row = Math.floor(idx / 2);
+            rCls.x = side * treeHalfW;
+            rCls.y = rootY - row * (levelStepY * 0.75);
+            rCls.z = row * (gapZ * 0.5);
+            rCls.cellW = nodeW + gapX;
+            rCls.cellD = nodeD + gapZ;
+        });
+
+        let minY = rootY;
+        for (const id of placed) {
+            const c = ontology.classes.get(id);
+            if (c && c.y < minY) minY = c.y;
+        }
+        layoutABoxIndividuals(minY - 220 * sY, sXZ, sY);
+    } else {
+        recomputeForestLayout();
+    }
+}
+
+function recompute3DLayout() {
+    if (uiState.isolateNeighborhood && uiState.selectedId) {
+        updateFocusedLayout();
+    } else {
+        recomputeForestLayout();
+    }
+}
+
+/* ==========================================================================
+   7. MOTOR DE PROJEÇÃO 3D E RENDERIZAÇÃO EM CANVAS HTML5 PURO
+   ========================================================================== */
+function project3D(x, y, z, width, height) {
+    const dx = x - camera.targetX;
+    const dy = y - camera.targetY;
+    const dz = z - camera.targetZ;
+
+    const cosY = Math.cos(camera.yaw);
+    const sinY = Math.sin(camera.yaw);
+    const x1 = dx * cosY - dz * sinY;
+    const z1 = dx * sinY + dz * cosY;
+
+    const cosP = Math.cos(camera.pitch);
+    const sinP = Math.sin(camera.pitch);
+    const y2 = dy * cosP - z1 * sinP;
+    const z2 = dy * sinP + z1 * cosP;
+
+    const camZ = z2 + camera.distance;
+    if (camZ <= 25) return null;
+
+    const scale = camera.fov / camZ;
+    return {
+        x: width / 2 + x1 * scale,
+        y: height / 2 - y2 * scale,
+        z: camZ,
+        scale
+    };
+}
+
+function roundRectPath(ctx, x, y, w, h, r) {
+    const rad = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + rad, y);
+    ctx.arcTo(x + w, y, x + w, y + h, rad);
+    ctx.arcTo(x + w, y + h, x, y + h, rad);
+    ctx.arcTo(x, y + h, x, y, rad);
+    ctx.arcTo(x, y, x + w, y, rad);
+    ctx.closePath();
+}
+
+function drawArrow3D(ctx, pFrom, pTo, color, dashed, label, showLabel, hitMeta) {
+    if (!pFrom || !pTo) return;
+    const dx = pTo.x - pFrom.x;
+    const dy = pTo.y - pFrom.y;
+    const dist = Math.hypot(dx, dy);
+    if (dist < 6) return;
+
+    const ux = dx / dist;
+    const uy = dy / dist;
+    const sx = pFrom.x + ux * 14;
+    const sy = pFrom.y + uy * 14;
+    const ex = pTo.x - ux * 14;
+    const ey = pTo.y - uy * 14;
+
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = hitMeta && uiState.hoveredEdge && uiState.hoveredEdge.id === hitMeta.id ? 3 : 1.7;
+    if (dashed) ctx.setLineDash([5, 5]);
+
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.lineTo(ex, ey);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Ponta da seta
+    const headLen = 9;
+    const angle = Math.atan2(ey - sy, ex - sx);
+    ctx.beginPath();
+    ctx.moveTo(ex, ey);
+    ctx.lineTo(ex - headLen * Math.cos(angle - 0.42), ey - headLen * Math.sin(angle - 0.42));
+    ctx.lineTo(ex - headLen * Math.cos(angle + 0.42), ey - headLen * Math.sin(angle + 0.42));
+    ctx.closePath();
+    ctx.fill();
+
+    const mx = (sx + ex) / 2;
+    const my = (sy + ey) / 2;
+
+    if (hitMeta) {
+        projectedEdgesCache.push({
+            id: hitMeta.id,
+            label: hitMeta.fullLabel || label,
+            x1: sx,
+            y1: sy,
+            x2: ex,
+            y2: ey,
+            mx,
+            my
+        });
+    }
+
+    if (showLabel && label) {
+        ctx.font = "600 10.5px Inter, sans-serif";
+        const tw = ctx.measureText(label).width + 10;
+        roundRectPath(ctx, mx - tw / 2, my - 9, tw, 18, 6);
+        ctx.fillStyle = "rgba(9, 14, 26, 0.88)";
+        ctx.fill();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.fillStyle = "#edf2ff";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(label, mx, my);
+    }
+    ctx.restore();
+}
+
+function drawSelfLoop3D(ctx, pNode, loopIndex, color, label, showLabel, hitMeta) {
+    if (!pNode) return;
+    const angleOffset = -Math.PI / 2 + loopIndex * 0.72;
+    const rx = 42 + loopIndex * 10;
+    const ry = 28 + loopIndex * 8;
+    const cx = pNode.x + Math.cos(angleOffset) * (rx + 26);
+    const cy = pNode.y + Math.sin(angleOffset) * (ry + 18);
+
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = hitMeta && uiState.hoveredEdge && uiState.hoveredEdge.id === hitMeta.id ? 3 : 1.8;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, rx, ry, angleOffset, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Seta direcional no topo do ciclo
+    const arrowAng = angleOffset + 0.5;
+    const ax = cx + Math.cos(arrowAng) * rx;
+    const ay = cy + Math.sin(arrowAng) * ry;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(ax, ay, 4, 0, Math.PI * 2);
+    ctx.fill();
+
+    const lx = cx + Math.cos(angleOffset) * (rx + 12);
+    const ly = cy + Math.sin(angleOffset) * (ry + 12);
+
+    if (hitMeta) {
+        projectedEdgesCache.push({
+            id: hitMeta.id,
+            label: hitMeta.fullLabel || `↻ ${label}`,
+            x1: pNode.x,
+            y1: pNode.y,
+            x2: lx,
+            y2: ly,
+            mx: lx,
+            my: ly
+        });
+    }
+
+    if (showLabel && label) {
+        const txt = `↻ ${label}`;
+        ctx.font = "600 10.5px Inter, sans-serif";
+        const tw = ctx.measureText(txt).width + 10;
+        roundRectPath(ctx, lx - tw / 2, ly - 9, tw, 18, 6);
+        ctx.fillStyle = "rgba(9, 14, 26, 0.9)";
+        ctx.fill();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.fillStyle = "#edf2ff";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(txt, lx, ly);
+    }
+    ctx.restore();
+}
+
+function drawBoxFrame(ctx, minX, maxX, y, minZ, maxZ, color, title, w, h) {
+    const corners = [
+        project3D(minX, y, minZ, w, h),
+        project3D(maxX, y, minZ, w, h),
+        project3D(maxX, y, maxZ, w, h),
+        project3D(minX, y, maxZ, w, h)
+    ];
+    if (corners.some((c) => !c)) return;
+
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color.replace("0.7", "0.06").replace("0.8", "0.06");
+    ctx.lineWidth = 1.4;
+    ctx.setLineDash([6, 6]);
+    ctx.beginPath();
+    ctx.moveTo(corners[0].x, corners[0].y);
+    for (let i = 1; i < 4; i++) ctx.lineTo(corners[i].x, corners[i].y);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    if (title) {
+        ctx.font = "700 11px Inter, sans-serif";
+        ctx.fillStyle = color;
+        ctx.fillText(title, corners[0].x + 8, corners[0].y - 6);
+    }
+    ctx.restore();
+}
+
+function computeVisibleEntitySets() {
+    const visibleClasses = new Set();
+    const visibleInds = new Set();
+
+    if (!uiState.stageActive) {
+        return { visibleClasses, visibleInds };
+    }
+
+    // Filtro por visão T-BOX vs A-BOX
+    let showTBox = uiState.viewMode !== "abox";
+    let showABox = uiState.viewMode !== "tbox";
+
+    if (uiState.viewMode === "free" && uiState.autoOcclude) {
+        if (camera.pitch >= 0) showABox = false;
+        else showTBox = false;
+    }
+
+    const diff = versionState.currentDiff;
+    const onlyChanged = versionState.onlyChanged && versionState.showDiff && diff;
+
+    if (showTBox) {
+        const expandedSet = getVisibleExpandedClasses();
+        if (uiState.isolateNeighborhood && uiState.selectedId) {
+            if (uiState.selectedKind === "class" && ontology.classes.has(uiState.selectedId)) {
+                const rootId = uiState.treeRootId && ontology.classes.has(uiState.treeRootId)
+                    ? uiState.treeRootId
+                    : uiState.selectedId;
+
+                function addExpandedTree(cid) {
+                    if (!expandedSet.has(cid)) return;
+                    visibleClasses.add(cid);
+                    const c = ontology.classes.get(cid);
+                    if (c && c.expanded) {
+                        for (const sub of getDirectSubclasses(cid)) {
+                            if (!visibleClasses.has(sub)) addExpandedTree(sub);
+                        }
+                    }
+                }
+                addExpandedTree(rootId);
+                visibleClasses.add(uiState.selectedId);
+
+                const rCls = ontology.classes.get(rootId);
+                if (rCls) {
+                    for (const p of rCls.parents) {
+                        if (p !== "owl:Thing" || uiState.showOwlThing) visibleClasses.add(p);
+                    }
+                }
+                for (const op of ontology.objProps.values()) {
+                    if (op.domain === uiState.selectedId && op.range && ontology.classes.has(op.range)) {
+                        visibleClasses.add(op.range);
+                    }
+                    if (op.range === uiState.selectedId && op.domain && ontology.classes.has(op.domain)) {
+                        visibleClasses.add(op.domain);
+                    }
+                }
+            } else if (uiState.selectedKind === "objProp") {
+                const op = ontology.objProps.get(uiState.selectedId);
+                if (op) {
+                    if (op.domain && ontology.classes.has(op.domain)) visibleClasses.add(op.domain);
+                    if (op.range && ontology.classes.has(op.range)) visibleClasses.add(op.range);
+                }
+            } else if (uiState.selectedKind === "dataProp") {
+                const dp = ontology.dataProps.get(uiState.selectedId);
+                if (dp && dp.domain && ontology.classes.has(dp.domain)) visibleClasses.add(dp.domain);
+            } else if (uiState.selectedKind === "individual") {
+                const ind = ontology.individuals.get(uiState.selectedId);
+                if (ind) {
+                    for (const t of ind.types) {
+                        if (t !== "owl:Thing" || uiState.showOwlThing) visibleClasses.add(t);
+                    }
+                }
             }
         } else {
-            mesh.scale.setScalar(1);
-            if (mesh.userData.halo) mesh.userData.halo.scale.setScalar(1);
+            for (const cid of expandedSet) visibleClasses.add(cid);
+        }
+
+        if (onlyChanged) {
+            for (const cid of Array.from(visibleClasses)) {
+                if (!diff.classes.has(cid) && cid !== uiState.selectedId) {
+                    visibleClasses.delete(cid);
+                }
+            }
+        }
+    }
+
+    if (showABox) {
+        for (const [iid, ind] of ontology.individuals.entries()) {
+            if (ind.hidden) continue;
+            if (uiState.isolateNeighborhood && uiState.selectedId) {
+                if (uiState.selectedKind === "individual") {
+                    const selInd = ontology.individuals.get(uiState.selectedId);
+                    const isLinked =
+                        iid === uiState.selectedId ||
+                        (selInd && selInd.objLinks.some((l) => l.target === iid)) ||
+                        ind.objLinks.some((l) => l.target === uiState.selectedId);
+                    if (!isLinked) continue;
+                } else if (uiState.selectedKind === "class") {
+                    if (!ind.types.has(uiState.selectedId)) continue;
+                } else {
+                    continue;
+                }
+            }
+            if (onlyChanged && !diff.individuals.has(iid) && iid !== uiState.selectedId) continue;
+            visibleInds.add(iid);
+        }
+    }
+
+    return { visibleClasses, visibleInds };
+}
+
+function render3DScene() {
+    const canvas = document.getElementById("sceneCanvas");
+    const wrap = document.getElementById("stageWrap");
+    if (!canvas || !wrap) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    const w = wrap.clientWidth;
+    const h = wrap.clientHeight;
+    if (canvas.width !== Math.floor(w * dpr) || canvas.height !== Math.floor(h * dpr)) {
+        canvas.width = Math.floor(w * dpr);
+        canvas.height = Math.floor(h * dpr);
+    }
+
+    const ctx = canvas.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+
+    projectedCardsCache = [];
+    projectedEdgesCache = [];
+
+    // Grade sutil de referência espacial
+    ctx.save();
+    ctx.strokeStyle = "rgba(56, 189, 248, 0.055)";
+    ctx.lineWidth = 1;
+    for (let g = -1200; g <= 1200; g += 300) {
+        const a1 = project3D(g, 0, -1200, w, h);
+        const a2 = project3D(g, 0, 1200, w, h);
+        if (a1 && a2) {
+            ctx.beginPath();
+            ctx.moveTo(a1.x, a1.y);
+            ctx.lineTo(a2.x, a2.y);
+            ctx.stroke();
+        }
+        const b1 = project3D(-1200, 0, g, w, h);
+        const b2 = project3D(1200, 0, g, w, h);
+        if (b1 && b2) {
+            ctx.beginPath();
+            ctx.moveTo(b1.x, b1.y);
+            ctx.lineTo(b2.x, b2.y);
+            ctx.stroke();
+        }
+    }
+    ctx.restore();
+
+    const { visibleClasses, visibleInds } = computeVisibleEntitySets();
+
+    // Molduras opcionais T-BOX / A-BOX
+    if (uiState.showBoundaries && uiState.stageActive) {
+        if (visibleClasses.size > 0) {
+            drawBoxFrame(ctx, -700, 700, 340 * uiState.spreadY, -350, 450, "rgba(56, 189, 248, 0.7)", "T-BOX (Classes)", w, h);
+        }
+        if (visibleInds.size > 0) {
+            drawBoxFrame(ctx, -650, 650, -160 * uiState.spreadY, -350, 350, "rgba(244, 114, 182, 0.7)", "A-BOX (Objetos)", w, h);
+        }
+    }
+
+    const visibleClassMap = new Map();
+    for (const cid of visibleClasses) {
+        const c = ontology.classes.get(cid);
+        if (c) visibleClassMap.set(cid, c);
+    }
+
+    const visibleIndMap = new Map();
+    for (const iid of visibleInds) {
+        const ind = ontology.individuals.get(iid);
+        if (ind) visibleIndMap.set(iid, ind);
+    }
+
+    const totalVisibleCount = visibleClassMap.size + visibleIndMap.size;
+    const autoHideEdgeLabels = totalVisibleCount > 10;
+
+    // 1. Arestas Hierárquicas subClassOf (Pai acima -> Trilho horizontal -> Filhos lado a lado em -Y)
+    if (uiState.subClassMode !== "none" && visibleClassMap.size > 0) {
+        const parentChildrenMap = new Map();
+        for (const [cid, cls] of visibleClassMap.entries()) {
+            if (cid === "owl:Thing") continue;
+            for (const pid of cls.parents) {
+                if (!visibleClassMap.has(pid)) continue;
+                const isSelRelated =
+                    uiState.selectedKind === "class" &&
+                    (uiState.selectedId === cid || uiState.selectedId === pid);
+                if (uiState.subClassMode === "selected" && !isSelRelated && !uiState.isolateNeighborhood) {
+                    continue;
+                }
+                if (!parentChildrenMap.has(pid)) parentChildrenMap.set(pid, []);
+                parentChildrenMap.get(pid).push({ child: cls, isSelRelated });
+            }
+        }
+
+        for (const [pid, entries] of parentChildrenMap.entries()) {
+            const pCls = visibleClassMap.get(pid);
+            if (!pCls || entries.length === 0) continue;
+
+            // Agrupa filhos que compartilham o mesmo nível (Y, Z) em um único trilho horizontal lado a lado
+            const levelGroups = new Map();
+            for (const item of entries) {
+                const lvlKey = `${Math.round(item.child.y)}_${Math.round(item.child.z)}`;
+                if (!levelGroups.has(lvlKey)) levelGroups.set(lvlKey, []);
+                levelGroups.get(lvlKey).push(item);
+            }
+
+            for (const groupItems of levelGroups.values()) {
+                const sampleChild = groupItems[0].child;
+                const midY = (pCls.y + sampleChild.y) / 2;
+                const midZ = (pCls.z + sampleChild.z) / 2;
+
+                const xs = [pCls.x, ...groupItems.map((it) => it.child.x)];
+                const minX = Math.min(...xs);
+                const maxX = Math.max(...xs);
+
+                const pCenter = project3D(pCls.x, pCls.y, pCls.z, w, h);
+                const stemMid = project3D(pCls.x, midY, midZ, w, h);
+                const railLeft = project3D(minX, midY, midZ, w, h);
+                const railRight = project3D(maxX, midY, midZ, w, h);
+                const anySel = groupItems.some((it) => it.isSelRelated);
+
+                ctx.save();
+                ctx.strokeStyle = anySel ? "rgba(56, 189, 248, 0.85)" : "rgba(129, 140, 248, 0.55)";
+                ctx.lineWidth = anySel ? 2.2 : 1.5;
+
+                if (pCenter && stemMid) {
+                    ctx.beginPath();
+                    ctx.moveTo(pCenter.x, pCenter.y);
+                    ctx.lineTo(stemMid.x, stemMid.y);
+                    ctx.stroke();
+                }
+
+                if (railLeft && railRight && maxX > minX) {
+                    ctx.beginPath();
+                    ctx.moveTo(railLeft.x, railLeft.y);
+                    ctx.lineTo(railRight.x, railRight.y);
+                    ctx.stroke();
+                }
+                ctx.restore();
+
+                for (const { child, isSelRelated } of groupItems) {
+                    const dropTop = project3D(child.x, midY, midZ, w, h);
+                    const dropBot = project3D(child.x, child.y, child.z, w, h);
+                    if (!dropTop || !dropBot) continue;
+
+                    const showLbl = (!autoHideEdgeLabels || isSelRelated) && groupItems.length <= 8;
+
+                    if (groupItems.length > 16) {
+                        ctx.save();
+                        ctx.strokeStyle = isSelRelated ? "rgba(56, 189, 248, 0.8)" : "rgba(129, 140, 248, 0.48)";
+                        ctx.lineWidth = 1.3;
+                        ctx.beginPath();
+                        ctx.moveTo(dropTop.x, dropTop.y);
+                        ctx.lineTo(dropBot.x, dropBot.y);
+                        ctx.stroke();
+                        ctx.restore();
+
+                        projectedEdgesCache.push({
+                            id: `sub_${child.id}_${pid}`,
+                            label: `${child.label} —[rdfs:subClassOf]→ ${pCls.label}`,
+                            x1: dropTop.x,
+                            y1: dropTop.y,
+                            x2: dropBot.x,
+                            y2: dropBot.y,
+                            mx: (dropTop.x + dropBot.x) / 2,
+                            my: (dropTop.y + dropBot.y) / 2
+                        });
+                    } else {
+                        drawArrow3D(
+                            ctx,
+                            dropBot,
+                            dropTop,
+                            isSelRelated ? "#38bdf8" : "rgba(129, 140, 248, 0.68)",
+                            false,
+                            "subClassOf",
+                            showLbl,
+                            { id: `sub_${child.id}_${pid}`, fullLabel: `${child.label} —[rdfs:subClassOf]→ ${pCls.label}` }
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    // 2. Relações ObjectProperty no T-BOX (incluindo ciclos quando domain === range)
+    const selfLoopCountByClass = new Map();
+    const diff = versionState.currentDiff;
+    for (const [opId, op] of ontology.objProps.entries()) {
+        if (!op.domain || !op.range) continue;
+        if (!visibleClassMap.has(op.domain) || !visibleClassMap.has(op.range)) continue;
+
+        const isSel =
+            (uiState.selectedKind === "objProp" && uiState.selectedId === opId) ||
+            (uiState.selectedKind === "class" && (uiState.selectedId === op.domain || uiState.selectedId === op.range));
+
+        let edgeColor = isSel ? "#34d399" : "rgba(52, 211, 153, 0.65)";
+        if (versionState.showDiff && diff && diff.objProps.has(opId)) {
+            const st = diff.objProps.get(opId).status;
+            edgeColor = st === "added" ? "#34d399" : st === "modified" ? "#fbbf24" : "#fb7185";
+        }
+
+        const showLbl = !autoHideEdgeLabels || isSel;
+        if (op.domain === op.range) {
+            const idx = selfLoopCountByClass.get(op.domain) || 0;
+            selfLoopCountByClass.set(op.domain, idx + 1);
+            const cls = visibleClassMap.get(op.domain);
+            const pNode = project3D(cls.x, cls.y, cls.z, w, h);
+            drawSelfLoop3D(ctx, pNode, idx, edgeColor, op.label, showLbl, {
+                id: `op_${opId}`,
+                fullLabel: `${cls.label} ↻ [${op.label}] (Ciclo)`
+            });
+        } else {
+            const cFrom = visibleClassMap.get(op.domain);
+            const cTo = visibleClassMap.get(op.range);
+            const pFrom = project3D(cFrom.x, cFrom.y, cFrom.z, w, h);
+            const pTo = project3D(cTo.x, cTo.y, cTo.z, w, h);
+            drawArrow3D(ctx, pFrom, pTo, edgeColor, false, op.label, showLbl, {
+                id: `op_${opId}`,
+                fullLabel: `${cFrom.label} —[${op.label}]→ ${cTo.label}`
+            });
+        }
+    }
+
+    // 3. Ligações rdf:type (A-BOX -> T-BOX) e ObjectLinks no A-BOX
+    for (const [iid, ind] of visibleIndMap.entries()) {
+        const pInd = project3D(ind.x, ind.y, ind.z, w, h);
+        for (const t of ind.types) {
+            const tCls = visibleClassMap.get(t);
+            if (tCls) {
+                const pCls = project3D(tCls.x, tCls.y, tCls.z, w, h);
+                drawArrow3D(ctx, pInd, pCls, "rgba(244, 114, 182, 0.35)", true, "rdf:type", false, {
+                    id: `type_${iid}_${t}`,
+                    fullLabel: `${ind.label} —[rdf:type]→ ${tCls.label}`
+                });
+            }
+        }
+
+        const indLoopCount = new Map();
+        for (const lk of ind.objLinks) {
+            const targetInd = visibleIndMap.get(lk.target);
+            if (!targetInd) continue;
+            const isSel =
+                uiState.selectedKind === "individual" &&
+                (uiState.selectedId === iid || uiState.selectedId === lk.target);
+            const showLbl = !autoHideEdgeLabels || isSel;
+            if (lk.target === iid) {
+                const cnt = indLoopCount.get(iid) || 0;
+                indLoopCount.set(iid, cnt + 1);
+                drawSelfLoop3D(ctx, pInd, cnt, "#f472b6", lk.prop, showLbl, {
+                    id: `indlk_${iid}_${lk.prop}_${lk.target}`,
+                    fullLabel: `${ind.label} ↻ [${lk.prop}]`
+                });
+            } else {
+                const pTarget = project3D(targetInd.x, targetInd.y, targetInd.z, w, h);
+                drawArrow3D(ctx, pInd, pTarget, "#f472b6", false, lk.prop, showLbl, {
+                    id: `indlk_${iid}_${lk.prop}_${lk.target}`,
+                    fullLabel: `${ind.label} —[${lk.prop}]→ ${targetInd.label}`
+                });
+            }
+        }
+    }
+
+    // 4. Coletar e ordenar cartões 3D por profundidade Z (pintor), mantendo o selecionado sempre no topo
+    const renderItems = [];
+
+    for (const [cid, cls] of visibleClassMap.entries()) {
+        const p = project3D(cls.x, cls.y, cls.z, w, h);
+        if (!p) continue;
+        const directSubs = getDirectSubclasses(cid);
+        const classDataProps = Array.from(ontology.dataProps.values()).filter((d) => d.domain === cid);
+        renderItems.push({
+            kind: "class",
+            id: cid,
+            label: cls.label,
+            color: cls.color,
+            p,
+            cellW: cls.cellW || 215,
+            subCount: directSubs.length,
+            expanded: cls.expanded,
+            attrs: classDataProps.map((d) => `${d.label}: ${d.range}`),
+            diffInfo: versionState.showDiff && diff ? diff.classes.get(cid) : null
+        });
+    }
+
+    // Nós fantasmas removidos na comparação de versões
+    if (versionState.showDiff && diff) {
+        for (const [remId, dInfo] of diff.classes.entries()) {
+            if (dInfo.status === "removed" && dInfo.oldData && !visibleClassMap.has(remId)) {
+                const p = project3D(0, 260 * uiState.spreadY, 160 * uiState.spreadXZ, w, h);
+                if (p) {
+                    renderItems.push({
+                        kind: "class",
+                        id: remId,
+                        label: dInfo.oldData.label || remId,
+                        color: "#fb7185",
+                        p,
+                        cellW: 210,
+                        subCount: 0,
+                        expanded: false,
+                        attrs: [],
+                        diffInfo: dInfo
+                    });
+                }
+            }
+        }
+    }
+
+    for (const [iid, ind] of visibleIndMap.entries()) {
+        const p = project3D(ind.x, ind.y, ind.z, w, h);
+        if (!p) continue;
+        renderItems.push({
+            kind: "individual",
+            id: iid,
+            label: ind.label,
+            color: "#f472b6",
+            p,
+            cellW: 190,
+            subCount: 0,
+            expanded: false,
+            attrs: ind.dataValues.map((dv) => `${dv.prop} = ${dv.value}`),
+            diffInfo: versionState.showDiff && diff ? diff.individuals.get(iid) : null
+        });
+    }
+
+    renderItems.sort((a, b) => {
+        const aSel = a.id === uiState.selectedId ? 1 : 0;
+        const bSel = b.id === uiState.selectedId ? 1 : 0;
+        if (aSel !== bSel) return aSel - bSel;
+        return b.p.z - a.p.z;
+    });
+
+    for (const item of renderItems) {
+        const isSelected = item.id === uiState.selectedId;
+        const isHovered = item.id === uiState.hoveredNodeId;
+        const sc = Math.max(0.32, Math.min(1.25, item.p.scale * 1.45));
+
+        const showAttrs = (isSelected || isHovered || totalVisibleCount <= 6) && item.attrs.length > 0;
+        const maxCellPx = Math.max(58, item.cellW * item.p.scale * 0.9);
+        const baseW = isSelected || isHovered ? Math.max(150, 175 * sc) : Math.min(maxCellPx, Math.max(66, 170 * sc));
+        const cardW = baseW;
+        const headerH = Math.max(24, 32 * sc);
+        const attrLineH = 15 * sc;
+        const cardH = showAttrs ? headerH + Math.min(4, item.attrs.length) * attrLineH + 8 : headerH;
+
+        const left = item.p.x - cardW / 2;
+        const top = item.p.y - cardH / 2;
+
+        ctx.save();
+
+        // Anel luminoso de seleção
+        if (isSelected) {
+            ctx.shadowColor = "rgba(56, 189, 248, 0.75)";
+            ctx.shadowBlur = 18;
+            roundRectPath(ctx, left - 4, top - 4, cardW + 8, cardH + 8, 12);
+            ctx.strokeStyle = "#38bdf8";
+            ctx.lineWidth = 2.4;
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+        }
+
+        // Fundo do cartão
+        roundRectPath(ctx, left, top, cardW, cardH, 9);
+        if (item.diffInfo && item.diffInfo.status === "removed") {
+            ctx.fillStyle = "rgba(76, 17, 30, 0.78)";
+            ctx.setLineDash([4, 4]);
+        } else {
+            ctx.fillStyle = isSelected ? "rgba(18, 34, 64, 0.96)" : "rgba(14, 22, 40, 0.92)";
+        }
+        ctx.fill();
+
+        let borderColor = item.color;
+        if (item.diffInfo) {
+            if (item.diffInfo.status === "added") borderColor = "#34d399";
+            else if (item.diffInfo.status === "modified") borderColor = "#fbbf24";
+            else if (item.diffInfo.status === "removed") borderColor = "#fb7185";
+        }
+        ctx.strokeStyle = isSelected ? "#ffffff" : borderColor;
+        ctx.lineWidth = isSelected || isHovered ? 2.2 : 1.5;
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Faixa lateral colorida
+        roundRectPath(ctx, left + 2, top + 3, 4, cardH - 6, 3);
+        ctx.fillStyle = borderColor;
+        ctx.fill();
+
+        // Botão de expandir/recolher subclasses no próprio cartão 3D
+        let expandBtnRect = null;
+        let rightReserve = 10;
+        if (item.kind === "class" && item.subCount > 0 && cardW >= 82) {
+            const btnW = 30;
+            const btnH = 18;
+            const bx = left + cardW - btnW - 6;
+            const by = top + (headerH - btnH) / 2;
+            expandBtnRect = { x: bx, y: by, w: btnW, h: btnH };
+            rightReserve = btnW + 12;
+
+            roundRectPath(ctx, bx, by, btnW, btnH, 5);
+            ctx.fillStyle = item.expanded ? "rgba(251, 191, 36, 0.2)" : "rgba(56, 189, 248, 0.22)";
+            ctx.fill();
+            ctx.strokeStyle = item.expanded ? "#fbbf24" : "#38bdf8";
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            ctx.font = "700 10px Inter, sans-serif";
+            ctx.fillStyle = item.expanded ? "#fde68a" : "#bae6fd";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(item.expanded ? `-${item.subCount}` : `+${item.subCount}`, bx + btnW / 2, by + btnH / 2);
+        }
+
+        // Texto do rótulo
+        const fontSize = Math.max(10, Math.min(13, Math.round(12 * sc)));
+        ctx.font = `700 ${fontSize}px Inter, sans-serif`;
+        ctx.fillStyle = "#f8fafc";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+
+        const prefix = item.diffInfo
+            ? item.diffInfo.status === "added"
+                ? "+ "
+                : item.diffInfo.status === "modified"
+                    ? "~ "
+                    : "- "
+            : "";
+        let displayTxt = prefix + item.label;
+        const maxTxtW = Math.max(24, cardW - 14 - rightReserve);
+        while (displayTxt.length > 3 && ctx.measureText(displayTxt).width > maxTxtW) {
+            displayTxt = displayTxt.slice(0, -2) + "…";
+        }
+        ctx.fillText(displayTxt, left + 11, top + headerH / 2);
+
+        // Atributos (Data Properties) dentro do cartão
+        if (showAttrs) {
+            ctx.strokeStyle = "rgba(148, 163, 184, 0.2)";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(left + 8, top + headerH);
+            ctx.lineTo(left + cardW - 8, top + headerH);
+            ctx.stroke();
+
+            ctx.font = `${Math.max(9, fontSize - 2)}px JetBrains Mono, monospace`;
+            ctx.fillStyle = "#93c5fd";
+            item.attrs.slice(0, 4).forEach((attrStr, aIdx) => {
+                let line = attrStr;
+                while (line.length > 4 && ctx.measureText(line).width > cardW - 18) {
+                    line = line.slice(0, -2) + "…";
+                }
+                ctx.fillText(line, left + 10, top + headerH + 8 + aIdx * attrLineH);
+            });
+        }
+
+        ctx.restore();
+
+        projectedCardsCache.push({
+            id: item.id,
+            kind: item.kind,
+            x: left,
+            y: top,
+            w: cardW,
+            h: cardH,
+            expandBtnRect
+        });
+    }
+
+    // Gizmo compacto de eixos X, Y, Z no canto inferior direito
+    drawCoordinateGizmo(ctx, w - 48, h - 68);
+}
+
+function drawCoordinateGizmo(ctx, gx, gy) {
+    const axes = [
+        { label: "x", dx: 24, dy: 0, dz: 0, color: "#fb7185" },
+        { label: "y", dx: 0, dy: 24, dz: 0, color: "#34d399" },
+        { label: "z", dx: 0, dy: 0, dz: 24, color: "#38bdf8" }
+    ];
+    const cosY = Math.cos(camera.yaw);
+    const sinY = Math.sin(camera.yaw);
+    const cosP = Math.cos(camera.pitch);
+    const sinP = Math.sin(camera.pitch);
+
+    ctx.save();
+    for (const ax of axes) {
+        const x1 = ax.dx * cosY - ax.dz * sinY;
+        const z1 = ax.dx * sinY + ax.dz * cosY;
+        const y2 = ax.dy * cosP - z1 * sinP;
+        const ex = gx + x1;
+        const ey = gy - y2;
+
+        ctx.strokeStyle = ax.color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(gx, gy);
+        ctx.lineTo(ex, ey);
+        ctx.stroke();
+
+        ctx.font = "700 10px Inter, sans-serif";
+        ctx.fillStyle = ax.color;
+        ctx.fillText(ax.label, ex + 3, ey + 3);
+    }
+    ctx.restore();
+}
+
+function fitCameraToVisibleNodes() {
+    const { visibleClasses, visibleInds } = computeVisibleEntitySets();
+    const pts = [];
+    for (const cid of visibleClasses) {
+        const c = ontology.classes.get(cid);
+        if (c) pts.push({ x: c.x, y: c.y, z: c.z });
+    }
+    for (const iid of visibleInds) {
+        const ind = ontology.individuals.get(iid);
+        if (ind) pts.push({ x: ind.x, y: ind.y, z: ind.z });
+    }
+    if (pts.length === 0) return;
+
+    let minX = Infinity, maxX = -Infinity;
+    let minY = Infinity, maxY = -Infinity;
+    let minZ = Infinity, maxZ = -Infinity;
+    for (const p of pts) {
+        if (p.x < minX) minX = p.x;
+        if (p.x > maxX) maxX = p.x;
+        if (p.y < minY) minY = p.y;
+        if (p.y > maxY) maxY = p.y;
+        if (p.z < minZ) minZ = p.z;
+        if (p.z > maxZ) maxZ = p.z;
+    }
+
+    camera.targetX = (minX + maxX) / 2;
+    camera.targetY = (minY + maxY) / 2;
+    camera.targetZ = (minZ + maxZ) / 2;
+
+    const spanX = Math.max(280, maxX - minX + 320);
+    const spanY = Math.max(240, maxY - minY + 260);
+    const spanZ = Math.max(280, maxZ - minZ + 320);
+
+    const wrap = document.getElementById("stageWrap");
+    const distX = (spanX * camera.fov) / Math.max(320, wrap.clientWidth - 90);
+    const distY = (spanY * camera.fov) / Math.max(260, wrap.clientHeight - 120);
+    const distZ = (spanZ * camera.fov) / Math.max(260, Math.min(wrap.clientWidth, wrap.clientHeight) - 120);
+    camera.distance = Math.max(540, Math.min(60000, Math.max(distX, distY, distZ)));
+}
+
+function setCameraPreset(mode) {
+    uiState.viewMode = mode;
+    if (mode === "tbox") {
+        camera.yaw = 0.0;
+        camera.pitch = 0.42; // Câmera acima olhando para -Y (pai acima, filhos lado a lado em -Y)
+    } else if (mode === "abox") {
+        camera.yaw = 0.0;
+        camera.pitch = -0.85; // Câmera embaixo olhando para +Y (A-BOX)
+    } else if (mode === "yx") {
+        camera.yaw = 0.0;
+        camera.pitch = 0.05; // Plano Y,X frontal (Hierarquia)
+    } else if (mode === "zx") {
+        camera.yaw = 0.0;
+        camera.pitch = 1.48; // Plano Z,X superior (Relações)
+    } else if (mode === "free") {
+        camera.yaw = 0.35;
+        camera.pitch = 0.36; // Visão 3D livre mostrando T-BOX + A-BOX
+    }
+
+    syncCameraButtons();
+    if (uiState.stageActive) {
+        fitCameraToVisibleNodes();
+    }
+    render3DScene();
+}
+
+/* ==========================================================================
+   8. INTERAÇÃO COM CANVAS 3D (ORBIT, PAN, ZOOM, HOVER E CLIQUE)
+   ========================================================================== */
+let pointerState = {
+    isDown: false,
+    moved: false,
+    button: 0,
+    lastX: 0,
+    lastY: 0,
+    pinchDist: 0
+};
+
+function distPointToSegment(px, py, x1, y1, x2, y2) {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const lenSq = dx * dx + dy * dy;
+    if (lenSq === 0) return Math.hypot(px - x1, py - y1);
+    let t = ((px - x1) * dx + (py - y1) * dy) / lenSq;
+    t = Math.max(0, Math.min(1, t));
+    return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
+}
+
+function hitTestCard(mx, my) {
+    for (let i = projectedCardsCache.length - 1; i >= 0; i--) {
+        const c = projectedCardsCache[i];
+        if (mx >= c.x && mx <= c.x + c.w && my >= c.y && my <= c.y + c.h) {
+            let hitExpand = false;
+            if (c.expandBtnRect) {
+                const b = c.expandBtnRect;
+                if (mx >= b.x - 4 && mx <= b.x + b.w + 4 && my >= b.y - 4 && my <= b.y + b.h + 4) {
+                    hitExpand = true;
+                }
+            }
+            return { card: c, hitExpand };
+        }
+    }
+    return null;
+}
+
+function hitTestEdge(mx, my) {
+    let best = null;
+    let bestDist = 9;
+    for (const e of projectedEdgesCache) {
+        const d = distPointToSegment(mx, my, e.x1, e.y1, e.x2, e.y2);
+        if (d < bestDist) {
+            bestDist = d;
+            best = e;
+        }
+    }
+    return best;
+}
+
+function setupCanvasInteractions() {
+    const canvas = document.getElementById("sceneCanvas");
+    const tooltip = document.getElementById("edgeTooltip");
+
+    canvas.addEventListener("mousedown", (e) => {
+        pointerState.isDown = true;
+        pointerState.moved = false;
+        pointerState.button = e.button;
+        pointerState.lastX = e.clientX;
+        pointerState.lastY = e.clientY;
+    });
+
+    window.addEventListener("mousemove", (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+
+        if (pointerState.isDown) {
+            const dx = e.clientX - pointerState.lastX;
+            const dy = e.clientY - pointerState.lastY;
+            if (Math.abs(dx) > 2 || Math.abs(dy) > 2) pointerState.moved = true;
+
+            if (pointerState.button === 2 || e.shiftKey) {
+                const panScale = camera.distance / 750;
+                camera.targetX -= dx * panScale * Math.cos(camera.yaw);
+                camera.targetZ += dx * panScale * Math.sin(camera.yaw);
+                camera.targetY += dy * panScale;
+            } else {
+                camera.yaw -= dx * 0.0065;
+                camera.pitch = Math.max(-1.52, Math.min(1.52, camera.pitch + dy * 0.0065));
+            }
+            pointerState.lastX = e.clientX;
+            pointerState.lastY = e.clientY;
+            render3DScene();
+            return;
+        }
+
+        if (mx >= 0 && my >= 0 && mx <= rect.width && my <= rect.height) {
+            const cardHit = hitTestCard(mx, my);
+            const prevHover = uiState.hoveredNodeId;
+            uiState.hoveredNodeId = cardHit ? cardHit.card.id : null;
+
+            if (!cardHit) {
+                const edgeHit = hitTestEdge(mx, my);
+                uiState.hoveredEdge = edgeHit;
+                if (edgeHit) {
+                    tooltip.style.display = "block";
+                    tooltip.textContent = edgeHit.label;
+                    tooltip.style.left = Math.min(rect.width - 220, mx + 14) + "px";
+                    tooltip.style.top = Math.max(10, my - 28) + "px";
+                } else {
+                    tooltip.style.display = "none";
+                }
+            } else {
+                uiState.hoveredEdge = null;
+                tooltip.style.display = "none";
+            }
+
+            canvas.style.cursor = cardHit || uiState.hoveredEdge ? "pointer" : "grab";
+            if (prevHover !== uiState.hoveredNodeId || uiState.hoveredEdge) {
+                render3DScene();
+            }
         }
     });
 
-    renderer.render(scene, camera);
+    window.addEventListener("mouseup", (e) => {
+        if (!pointerState.isDown) return;
+        const wasMoved = pointerState.moved;
+        pointerState.isDown = false;
+
+        if (!wasMoved) {
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+            if (mx >= 0 && my >= 0 && mx <= rect.width && my <= rect.height) {
+                const hit = hitTestCard(mx, my);
+                if (hit) {
+                    if (hit.hitExpand && hit.card.kind === "class") {
+                        const cls = ontology.classes.get(hit.card.id);
+                        if (cls) {
+                            cls.expanded = !cls.expanded;
+                            recompute3DLayout();
+                            fitCameraToVisibleNodes();
+                            refreshExplorerTrees();
+                            render3DScene();
+                        }
+                    } else {
+                        selectEntity(hit.card.kind, hit.card.id, false);
+                    }
+                }
+            }
+        }
+    });
+
+    canvas.addEventListener("contextmenu", (e) => e.preventDefault());
+
+    canvas.addEventListener(
+        "wheel",
+        (e) => {
+            e.preventDefault();
+            const factor = e.deltaY > 0 ? 1.14 : 0.87;
+            camera.distance = Math.max(240, Math.min(60000, camera.distance * factor));
+            render3DScene();
+        },
+        { passive: false }
+    );
+
+    // Suporte Touch (arrastar e pinça para zoom)
+    canvas.addEventListener(
+        "touchstart",
+        (e) => {
+            if (e.touches.length === 1) {
+                pointerState.isDown = true;
+                pointerState.moved = false;
+                pointerState.lastX = e.touches[0].clientX;
+                pointerState.lastY = e.touches[0].clientY;
+            } else if (e.touches.length === 2) {
+                pointerState.pinchDist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+            }
+        },
+        { passive: false }
+    );
+
+    canvas.addEventListener(
+        "touchmove",
+        (e) => {
+            e.preventDefault();
+            if (e.touches.length === 1 && pointerState.isDown) {
+                const dx = e.touches[0].clientX - pointerState.lastX;
+                const dy = e.touches[0].clientY - pointerState.lastY;
+                if (Math.abs(dx) > 2 || Math.abs(dy) > 2) pointerState.moved = true;
+                camera.yaw -= dx * 0.0065;
+                camera.pitch = Math.max(-1.52, Math.min(1.52, camera.pitch + dy * 0.0065));
+                pointerState.lastX = e.touches[0].clientX;
+                pointerState.lastY = e.touches[0].clientY;
+                render3DScene();
+            } else if (e.touches.length === 2) {
+                const d = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                if (pointerState.pinchDist > 0) {
+                    const ratio = pointerState.pinchDist / Math.max(1, d);
+                    camera.distance = Math.max(240, Math.min(60000, camera.distance * ratio));
+                    render3DScene();
+                }
+                pointerState.pinchDist = d;
+            }
+        },
+        { passive: false }
+    );
+
+    canvas.addEventListener("touchend", () => {
+        pointerState.isDown = false;
+        pointerState.pinchDist = 0;
+    });
 }
 
-// ============================================================
-// INICIALIZAÇÃO
-// ============================================================
-function init() {
-    renderTimeline();
-    initThree();
-    selectVersion(0);
+/* ==========================================================================
+   9. SELEÇÃO DE ENTIDADES, ÁRVORE DO EXPLORADOR E INSPETOR CRUD
+   ========================================================================== */
+function expandAncestorsOfClass(cid, visited = new Set()) {
+    if (visited.has(cid)) return;
+    visited.add(cid);
+    const cls = ontology.classes.get(cid);
+    if (!cls) return;
+    for (const pid of cls.parents) {
+        const pCls = ontology.classes.get(pid);
+        if (pCls) {
+            pCls.expanded = true;
+            expandAncestorsOfClass(pid, visited);
+        }
+    }
 }
 
-window.addEventListener('load', () => {
-    // pequeno delay para garantir que o layout está calculado
-    setTimeout(init, 30);
+function selectEntity(kind, id, fromTree = false) {
+    uiState.selectedKind = kind;
+    uiState.selectedId = id;
+    uiState.stageActive = true;
+
+    if (kind === "class") {
+        const cls = ontology.classes.get(id);
+        if (cls) {
+            expandAncestorsOfClass(id);
+            // Ao clicar em uma subclasse dentro da árvore ativa, expande seus filhos em -Y mantendo a árvore
+            if (!uiState.treeRootId || !isClassDescendantOf(id, uiState.treeRootId)) {
+                uiState.treeRootId = id;
+            }
+            if (getDirectSubclasses(id).length > 0) {
+                cls.expanded = true;
+            }
+        }
+        if (uiState.viewMode === "abox") setCameraPreset("tbox");
+    } else if (kind === "individual") {
+        if (uiState.viewMode === "tbox") setCameraPreset("abox");
+    }
+
+    updateEmptyStageOverlay();
+    recompute3DLayout();
+    fitCameraToVisibleNodes();
+    refreshExplorerTrees();
+    renderInspector();
+    render3DScene();
+}
+
+function updateEmptyStageOverlay() {
+    const overlay = document.getElementById("emptyStageOverlay");
+    const title = document.getElementById("emptyStageTitle");
+    const desc = document.getElementById("emptyStageDesc");
+    const actions = document.getElementById("emptyStageActions");
+    const realClasses = ontology.classes.size - 1;
+
+    if (uiState.stageActive) {
+        overlay.style.display = "none";
+        return;
+    }
+
+    overlay.style.display = "flex";
+    if (realClasses <= 0 && ontology.individuals.size === 0) {
+        title.textContent = "OntoCube 3D Pronto";
+        desc.innerHTML =
+            "Carregue um arquivo <strong>.OWL / .RDF</strong>, importe triplas de <strong>Evolução</strong> ou crie suas primeiras classes e relações no painel lateral.";
+        actions.innerHTML = `
+          <button class="btn btn-primary" onclick="document.getElementById('owlFileInput').click()">📂 Carregar .OWL / .RDF</button>
+          <button class="btn btn-emerald" onclick="document.getElementById('evoFileInput').click()">🚀 Ler Evolução</button>
+          <button class="btn" onclick="switchRightTab('create')">➕ Criar Classe</button>
+        `;
+    } else {
+        title.textContent = `Ontologia Carregada (${realClasses} classes)`;
+        desc.innerHTML =
+            "O palco 3D inicia limpo para evitar poluição visual. Selecione uma <strong>classe</strong> na árvore hierárquica à esquerda ou clique abaixo para exibir toda a floresta.";
+        actions.innerHTML = `
+          <button class="btn btn-primary" onclick="showAllOntologyOnStage()">🌲 Exibir Toda a Ontologia</button>
+        `;
+    }
+}
+
+function showAllOntologyOnStage() {
+    uiState.stageActive = true;
+    uiState.isolateNeighborhood = false;
+    syncIsolateUI();
+    updateEmptyStageOverlay();
+    recompute3DLayout();
+    fitCameraToVisibleNodes();
+    render3DScene();
+}
+
+function refreshExplorerTrees() {
+    const q = uiState.searchQuery.trim().toLowerCase();
+    const diff = versionState.currentDiff;
+    const onlyChanged = versionState.onlyChanged && versionState.showDiff && diff;
+
+    // 1. Árvore Hierárquica de Classes (inicia colapsada mostrando entidades de alto nível)
+    const classContainer = document.getElementById("classTreeContainer");
+    classContainer.innerHTML = "";
+    const realClassCount = Math.max(0, ontology.classes.size - 1);
+    document.getElementById("classCountBadge").textContent = String(realClassCount);
+
+    if (realClassCount === 0) {
+        classContainer.innerHTML = `<div style="font-size:11.5px; color:var(--text-dim); padding:4px;">Nenhuma classe carregada.</div>`;
+    } else {
+        const renderedInTree = new Set(["owl:Thing"]);
+
+        function renderClassNode(cid, depth) {
+            if (renderedInTree.has(cid)) return;
+            const cls = ontology.classes.get(cid);
+            if (!cls) return;
+            renderedInTree.add(cid);
+
+            const directSubs = getDirectSubclasses(cid);
+            const dInfo = versionState.showDiff && diff ? diff.classes.get(cid) : null;
+
+            const matchesSearch = !q || cls.label.toLowerCase().includes(q) || cid.toLowerCase().includes(q);
+            const matchesDiff = !onlyChanged || !!dInfo;
+
+            if (matchesSearch && matchesDiff) {
+                const row = document.createElement("div");
+                row.className = "tree-row" + (uiState.selectedKind === "class" && uiState.selectedId === cid ? " selected" : "");
+                if (dInfo) row.classList.add(`diff-${dInfo.status}`);
+                row.style.paddingLeft = `${7 + depth * 14}px`;
+
+                const toggleHtml =
+                    directSubs.length > 0
+                        ? `<button class="icon-mini-btn" data-toggle-cls="${escapeHtml(cid)}" title="Expandir/Recolher">${cls.expanded ? "▾" : "▸"} ${directSubs.length}</button>`
+                        : `<span style="width:14px; display:inline-block;"></span>`;
+
+                const diffBadge = dInfo
+                    ? `<span class="diff-tag ${dInfo.status === "added" ? "add" : dInfo.status === "modified" ? "mod" : "rem"}">${dInfo.status === "added" ? "+" : dInfo.status === "modified" ? "~" : "-"}</span>`
+                    : "";
+
+                row.innerHTML = `
+              <div class="tree-left">
+                ${toggleHtml}
+                <span class="dot" style="background:${cls.color};"></span>
+                <span class="tree-label" title="${escapeHtml(cls.label)}">${escapeHtml(cls.label)}</span>
+              </div>
+              <div class="tree-actions">
+                ${diffBadge}
+                <button class="icon-mini-btn" data-hide-cls="${escapeHtml(cid)}" title="Ocultar/Exibir no 3D">${cls.hidden ? "🚫" : "👁"}</button>
+              </div>
+            `;
+
+                row.onclick = (e) => {
+                    const tBtn = e.target.closest("[data-toggle-cls]");
+                    if (tBtn) {
+                        e.stopPropagation();
+                        cls.expanded = !cls.expanded;
+                        refreshExplorerTrees();
+                        if (uiState.stageActive) {
+                            recompute3DLayout();
+                            fitCameraToVisibleNodes();
+                            render3DScene();
+                        }
+                        return;
+                    }
+                    const hBtn = e.target.closest("[data-hide-cls]");
+                    if (hBtn) {
+                        e.stopPropagation();
+                        cls.hidden = !cls.hidden;
+                        refreshExplorerTrees();
+                        if (uiState.stageActive) render3DScene();
+                        return;
+                    }
+                    uiState.treeRootId = cid;
+                    selectEntity("class", cid, true);
+                };
+                classContainer.appendChild(row);
+            }
+
+            if (cls.expanded || q) {
+                for (const sub of directSubs) {
+                    renderClassNode(sub, depth + 1);
+                }
+            }
+        }
+
+        const topRoots = getDirectSubclasses("owl:Thing");
+        for (const r of topRoots) renderClassNode(r, 0);
+
+        // Garante que classes desconectadas também apareçam
+        for (const cid of ontology.classes.keys()) {
+            if (!renderedInTree.has(cid)) {
+                const cls = ontology.classes.get(cid);
+                const hasParentInOntology = Array.from(cls.parents).some((p) => ontology.classes.has(p));
+                if (!hasParentInOntology) renderClassNode(cid, 0);
+            }
+        }
+
+        // Classes removidas no Diff
+        if (versionState.showDiff && diff) {
+            for (const [remId, dInfo] of diff.classes.entries()) {
+                if (dInfo.status === "removed" && dInfo.oldData) {
+                    const row = document.createElement("div");
+                    row.className = "tree-row diff-removed";
+                    row.innerHTML = `
+                <div class="tree-left">
+                  <span class="dot" style="background:#fb7185;"></span>
+                  <span class="tree-label">${escapeHtml(dInfo.oldData.label || remId)}</span>
+                </div>
+                <span class="diff-tag rem">-</span>
+              `;
+                    row.onclick = () => {
+                        uiState.selectedKind = "class";
+                        uiState.selectedId = remId;
+                        renderInspector();
+                    };
+                    classContainer.appendChild(row);
+                }
+            }
+        }
+    }
+
+    // 2. ObjectProperties
+    const opContainer = document.getElementById("objPropTreeContainer");
+    opContainer.innerHTML = "";
+    document.getElementById("objPropCountBadge").textContent = String(ontology.objProps.size);
+    for (const [opId, op] of ontology.objProps.entries()) {
+        const dInfo = versionState.showDiff && diff ? diff.objProps.get(opId) : null;
+        if (onlyChanged && !dInfo) continue;
+        if (q && !op.label.toLowerCase().includes(q)) continue;
+
+        const row = document.createElement("div");
+        row.className = "tree-row" + (uiState.selectedKind === "objProp" && uiState.selectedId === opId ? " selected" : "");
+        if (dInfo) row.classList.add(`diff-${dInfo.status}`);
+        row.innerHTML = `
+          <div class="tree-left">
+            <span class="dot" style="background:#34d399;"></span>
+            <span class="tree-label">${escapeHtml(op.label)}</span>
+          </div>
+          <span style="font-size:10px; color:var(--text-dim);">${escapeHtml(op.domain || "*")}→${escapeHtml(op.range || "*")}</span>
+        `;
+        row.onclick = () => selectEntity("objProp", opId, true);
+        opContainer.appendChild(row);
+    }
+
+    // 3. DataProperties
+    const dpContainer = document.getElementById("dataPropTreeContainer");
+    dpContainer.innerHTML = "";
+    document.getElementById("dataPropCountBadge").textContent = String(ontology.dataProps.size);
+    for (const [dpId, dp] of ontology.dataProps.entries()) {
+        const dInfo = versionState.showDiff && diff ? diff.dataProps.get(dpId) : null;
+        if (onlyChanged && !dInfo) continue;
+        if (q && !dp.label.toLowerCase().includes(q)) continue;
+
+        const row = document.createElement("div");
+        row.className = "tree-row" + (uiState.selectedKind === "dataProp" && uiState.selectedId === dpId ? " selected" : "");
+        if (dInfo) row.classList.add(`diff-${dInfo.status}`);
+        row.innerHTML = `
+          <div class="tree-left">
+            <span class="dot" style="background:#fbbf24;"></span>
+            <span class="tree-label">${escapeHtml(dp.label)}</span>
+          </div>
+          <span style="font-size:10px; color:var(--text-dim);">${escapeHtml(dp.range)}</span>
+        `;
+        row.onclick = () => selectEntity("dataProp", dpId, true);
+        dpContainer.appendChild(row);
+    }
+
+    // 4. Indivíduos A-BOX
+    const indContainer = document.getElementById("indTreeContainer");
+    indContainer.innerHTML = "";
+    document.getElementById("indCountBadge").textContent = String(ontology.individuals.size);
+    for (const [iid, ind] of ontology.individuals.entries()) {
+        const dInfo = versionState.showDiff && diff ? diff.individuals.get(iid) : null;
+        if (onlyChanged && !dInfo) continue;
+        if (q && !ind.label.toLowerCase().includes(q)) continue;
+
+        const row = document.createElement("div");
+        row.className = "tree-row" + (uiState.selectedKind === "individual" && uiState.selectedId === iid ? " selected" : "");
+        if (dInfo) row.classList.add(`diff-${dInfo.status}`);
+        row.innerHTML = `
+          <div class="tree-left">
+            <span class="dot" style="background:#f472b6;"></span>
+            <span class="tree-label">${escapeHtml(ind.label)}</span>
+          </div>
+          <span style="font-size:10px; color:var(--text-dim);">${escapeHtml(Array.from(ind.types).join(", "))}</span>
+        `;
+        row.onclick = () => selectEntity("individual", iid, true);
+        indContainer.appendChild(row);
+    }
+}
+
+function renderVersionPanel() {
+    const badge = document.getElementById("versionCountBadge");
+    const hudLabel = document.getElementById("hudVersionLabel");
+    const btnPrev = document.getElementById("btnPrevVersion");
+    const btnNext = document.getElementById("btnNextVersion");
+    const baseSel = document.getElementById("baseVersionSelect");
+    const timeline = document.getElementById("versionTimelineList");
+    const diffList = document.getElementById("diffSummaryList");
+
+    const total = versionState.history.length;
+    const activeEntry = total > 0 && versionState.activeIndex >= 0 ? versionState.history[versionState.activeIndex] : null;
+    badge.textContent = activeEntry ? `v${activeEntry.version}` : "v0";
+    hudLabel.textContent = activeEntry ? `Versão: v${activeEntry.version} / ${total}` : "Versão: v0";
+
+    btnPrev.disabled = versionState.activeIndex <= 0;
+    btnNext.disabled = versionState.activeIndex < 0 || versionState.activeIndex >= total - 1;
+
+    baseSel.innerHTML = "";
+    versionState.history.forEach((v, idx) => {
+        const opt = document.createElement("option");
+        opt.value = String(idx);
+        opt.textContent = `v${v.version} — ${v.label} (${v.timestamp})`;
+        if (idx === versionState.baseIndex) opt.selected = true;
+        baseSel.appendChild(opt);
+    });
+
+    timeline.innerHTML = "";
+    versionState.history.forEach((v, idx) => {
+        const row = document.createElement("div");
+        row.className = "tree-row" + (idx === versionState.activeIndex ? " selected" : "");
+        row.innerHTML = `
+          <div class="tree-left">
+            <span class="badge-pill">v${v.version}</span>
+            <span class="tree-label" title="${escapeHtml(v.label)}">${escapeHtml(v.label)}</span>
+          </div>
+          <span style="font-size:10px; color:var(--text-dim);">${v.timestamp}</span>
+        `;
+        row.onclick = () => navigateToVersion(idx);
+        timeline.appendChild(row);
+    });
+
+    diffList.innerHTML = "";
+    const diff = versionState.currentDiff;
+    if (!diff || (diff.counts.added === 0 && diff.counts.modified === 0 && diff.counts.removed === 0)) {
+        diffList.innerHTML = `<div style="font-size:11.5px; color:var(--text-dim);">Sem alterações entre as versões comparadas.</div>`;
+        return;
+    }
+
+    const appendDiffGroup = (map, kind, labelPrefix) => {
+        for (const [id, info] of map.entries()) {
+            const row = document.createElement("div");
+            row.className = `tree-row diff-${info.status}`;
+            row.innerHTML = `
+            <div class="tree-left">
+              <span class="diff-tag ${info.status === "added" ? "add" : info.status === "modified" ? "mod" : "rem"}">
+                ${info.status === "added" ? "+" : info.status === "modified" ? "~" : "-"}
+              </span>
+              <span class="tree-label">${labelPrefix}: ${escapeHtml(id)}</span>
+            </div>
+          `;
+            row.onclick = () => {
+                if (info.status !== "removed") {
+                    selectEntity(kind, id, true);
+                } else {
+                    uiState.selectedKind = kind;
+                    uiState.selectedId = id;
+                    renderInspector();
+                }
+            };
+            diffList.appendChild(row);
+        }
+    };
+
+    appendDiffGroup(diff.classes, "class", "Classe");
+    appendDiffGroup(diff.objProps, "objProp", "Relação");
+    appendDiffGroup(diff.dataProps, "dataProp", "Atributo");
+    appendDiffGroup(diff.individuals, "individual", "Objeto");
+}
+
+function renderInspector() {
+    const container = document.getElementById("inspectorContent");
+    if (!container) return;
+
+    const kind = uiState.selectedKind;
+    const id = uiState.selectedId;
+    const diff = versionState.currentDiff;
+
+    if (!kind || !id) {
+        container.innerHTML = `
+          <div class="section-card">
+            <p style="color:var(--text-muted); font-size:12px; line-height:1.5;">
+              Selecione qualquer <strong>Classe</strong>, <strong>Relação</strong>, <strong>Atributo</strong> ou <strong>Objeto</strong> na árvore lateral ou no espaço 3D para inspecionar e editar.
+            </p>
+          </div>`;
+        return;
+    }
+
+    // Verifica se é um item removido na versão ativa
+    if (diff) {
+        const diffMap =
+            kind === "class" ? diff.classes : kind === "objProp" ? diff.objProps : kind === "dataProp" ? diff.dataProps : diff.individuals;
+        const dInfo = diffMap.get(id);
+        if (dInfo && dInfo.status === "removed" && dInfo.oldData) {
+            container.innerHTML = `
+            <div class="section-card" style="border-left:3px solid var(--accent-rose);">
+              <div class="section-header"><span>Entidade Removida (- Diff)</span></div>
+              <div><strong>${escapeHtml(dInfo.oldData.label || id)}</strong></div>
+              <p style="font-size:11.5px; color:var(--text-muted);">Esta entidade existia na versão base comparada e foi removida na versão ativa.</p>
+              <button class="btn btn-emerald btn-sm" id="btnRestoreRemoved">↩ Restaurar na Versão Atual</button>
+            </div>
+          `;
+            document.getElementById("btnRestoreRemoved").onclick = () => {
+                if (kind === "class") {
+                    const pSet = new Set(dInfo.oldData.parents || []);
+                    if (pSet.size === 0) pSet.add("owl:Thing");
+                    ontology.classes.set(id, {
+                        id,
+                        label: dInfo.oldData.label || id,
+                        comment: dInfo.oldData.comment || "",
+                        parents: pSet,
+                        disjointWith: new Set(dInfo.oldData.disjointWith || []),
+                        color: dInfo.oldData.color || pickColor(ontology.classes.size),
+                        expanded: false,
+                        hidden: false,
+                        x: 0,
+                        y: 0,
+                        z: 0,
+                        cellW: 215,
+                        cellD: 100
+                    });
+                } else if (kind === "objProp") {
+                    ontology.objProps.set(id, { ...dInfo.oldData });
+                } else if (kind === "dataProp") {
+                    ontology.dataProps.set(id, { ...dInfo.oldData });
+                } else if (kind === "individual") {
+                    ontology.individuals.set(id, {
+                        id,
+                        label: dInfo.oldData.label || id,
+                        types: new Set(dInfo.oldData.types || []),
+                        dataValues: (dInfo.oldData.dataValues || []).map((x) => ({ ...x })),
+                        objLinks: (dInfo.oldData.objLinks || []).map((x) => ({ ...x })),
+                        hidden: false,
+                        x: 0,
+                        y: 0,
+                        z: 0
+                    });
+                }
+                createVersionSnapshot(`Restaurado: ${id}`);
+                refreshAllUI();
+                if (uiState.stageActive) {
+                    recompute3DLayout();
+                    render3DScene();
+                }
+                showToast(`Entidade "${id}" restaurada.`);
+            };
+            return;
+        }
+    }
+
+    const allClassIds = Array.from(ontology.classes.keys()).filter((c) => c !== "owl:Thing");
+
+    if (kind === "class") {
+        const cls = ontology.classes.get(id);
+        if (!cls) return;
+        const dInfo = diff ? diff.classes.get(id) : null;
+        const directSubs = getDirectSubclasses(id);
+        const domainDPs = Array.from(ontology.dataProps.values()).filter((d) => d.domain === id);
+        const domainOPs = Array.from(ontology.objProps.values()).filter((o) => o.domain === id);
+        const rangeOPs = Array.from(ontology.objProps.values()).filter((o) => o.range === id);
+
+        container.innerHTML = `
+          <div class="section-card">
+            <div class="section-header">
+              <span>Classe (T-BOX)</span>
+              <span class="badge-pill">${escapeHtml(id)}</span>
+            </div>
+            ${dInfo
+                ? `<div style="font-size:11px; color:${dInfo.status === "added" ? "#6ee7b7" : "#fde68a"};">
+                     Diff: ${escapeHtml(dInfo.changes.join(" • "))}
+                   </div>`
+                : ""
+            }
+            <div class="form-grid">
+              <label class="label-sm">Rótulo (rdfs:label)</label>
+              <input type="text" class="input" id="editClassLabel" value="${escapeHtml(cls.label)}" />
+              <label class="label-sm">Descrição (rdfs:comment)</label>
+              <input type="text" class="input" id="editClassComment" value="${escapeHtml(cls.comment || "")}" />
+              <div class="form-row">
+                <button class="btn btn-primary btn-sm" id="btnSaveClassMeta" style="flex:1;">💾 Salvar Alterações</button>
+                ${id !== "owl:Thing" ? `<button class="btn btn-rose btn-sm" id="btnDeleteClass">🗑 Excluir</button>` : ""}
+              </div>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header"><span>Superclasses (rdfs:subClassOf)</span></div>
+            <div class="chip-list" id="parentChips">
+              ${Array.from(cls.parents)
+                .map(
+                    (p) =>
+                        `<span class="chip">${escapeHtml(p)} ${p !== "owl:Thing" ? `<button data-rm-parent="${escapeHtml(p)}">×</button>` : ""
+                        }</span>`
+                )
+                .join("")}
+            </div>
+            <div class="form-row">
+              <select class="select" id="selAddParent">
+                <option value="">+ Adicionar superclasse...</option>
+                ${allClassIds
+                .filter((c) => c !== id && !cls.parents.has(c))
+                .map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`)
+                .join("")}
+              </select>
+              <button class="btn btn-sm" id="btnAddParent">Adicionar</button>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header"><span>Subclasses Diretas (${directSubs.length})</span></div>
+            <div class="chip-list">
+              ${directSubs.length > 0
+                ? directSubs.map((s) => `<span class="chip" style="cursor:pointer;" data-nav-cls="${escapeHtml(s)}">${escapeHtml(s)}</span>`).join("")
+                : `<span style="font-size:11px; color:var(--text-dim);">Nenhuma subclasse direta.</span>`
+            }
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header"><span>Classes Disjuntas (owl:disjointWith)</span></div>
+            <div class="chip-list" id="disjointChips">
+              ${Array.from(cls.disjointWith)
+                .map((d) => `<span class="chip">${escapeHtml(d)} <button data-rm-disj="${escapeHtml(d)}">×</button></span>`)
+                .join("")}
+            </div>
+            <div class="form-row">
+              <select class="select" id="selAddDisjoint">
+                <option value="">+ Marcar classe disjunta...</option>
+                ${allClassIds
+                .filter((c) => c !== id && !cls.disjointWith.has(c))
+                .map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`)
+                .join("")}
+              </select>
+              <button class="btn btn-sm" id="btnAddDisjoint">Adicionar</button>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header"><span>Atributos da Classe (Data Properties)</span></div>
+            ${domainDPs.length > 0
+                ? domainDPs
+                    .map(
+                        (dp) =>
+                            `<div style="font-size:11.5px; color:#93c5fd;">• <strong>${escapeHtml(dp.label)}</strong> : ${escapeHtml(dp.range)}</div>`
+                    )
+                    .join("")
+                : `<div style="font-size:11px; color:var(--text-dim);">Nenhum atributo associado.</div>`
+            }
+          </div>
+
+          <div class="section-card">
+            <div class="section-header"><span>Relações (Object Properties)</span></div>
+            ${domainOPs.length === 0 && rangeOPs.length === 0
+                ? `<div style="font-size:11px; color:var(--text-dim);">Nenhuma relação conectada.</div>`
+                : ""
+            }
+            ${domainOPs
+                .map(
+                    (op) =>
+                        `<div style="font-size:11.5px; color:#6ee7b7;">→ <strong>${escapeHtml(op.label)}</strong> → ${escapeHtml(op.range || "*")}</div>`
+                )
+                .join("")}
+            ${rangeOPs
+                .filter((op) => op.domain !== id)
+                .map(
+                    (op) =>
+                        `<div style="font-size:11.5px; color:#a5b4fc;">← ${escapeHtml(op.domain || "*")} — <strong>${escapeHtml(op.label)}</strong></div>`
+                )
+                .join("")}
+          </div>
+        `;
+
+        document.getElementById("btnSaveClassMeta").onclick = () => {
+            cls.label = document.getElementById("editClassLabel").value.trim() || cls.id;
+            cls.comment = document.getElementById("editClassComment").value.trim();
+            createVersionSnapshot(`Editada classe: ${cls.label}`);
+            refreshAllUI();
+            if (uiState.stageActive) render3DScene();
+            showToast("Classe atualizada.");
+        };
+
+        const btnDel = document.getElementById("btnDeleteClass");
+        if (btnDel) {
+            btnDel.onclick = () => {
+                deleteClass(id);
+            };
+        }
+
+        document.getElementById("btnAddParent").onclick = () => {
+            const val = document.getElementById("selAddParent").value;
+            if (!val) return;
+            cls.parents.delete("owl:Thing");
+            cls.parents.add(val);
+            createVersionSnapshot(`Superclasse ${val} adicionada em ${cls.label}`);
+            refreshAllUI();
+            if (uiState.stageActive) {
+                recompute3DLayout();
+                render3DScene();
+            }
+        };
+
+        container.querySelectorAll("[data-rm-parent]").forEach((btn) => {
+            btn.onclick = () => {
+                const p = btn.getAttribute("data-rm-parent");
+                cls.parents.delete(p);
+                if (cls.parents.size === 0) cls.parents.add("owl:Thing");
+                createVersionSnapshot(`Removida superclasse ${p} de ${cls.label}`);
+                refreshAllUI();
+                if (uiState.stageActive) {
+                    recompute3DLayout();
+                    render3DScene();
+                }
+            };
+        });
+
+        document.getElementById("btnAddDisjoint").onclick = () => {
+            const val = document.getElementById("selAddDisjoint").value;
+            if (!val) return;
+            cls.disjointWith.add(val);
+            ontology.classes.get(val)?.disjointWith.add(id);
+            createVersionSnapshot(`Disjunção ${cls.label} ⊥ ${val}`);
+            refreshAllUI();
+        };
+
+        container.querySelectorAll("[data-rm-disj]").forEach((btn) => {
+            btn.onclick = () => {
+                const d = btn.getAttribute("data-rm-disj");
+                cls.disjointWith.delete(d);
+                ontology.classes.get(d)?.disjointWith.delete(id);
+                createVersionSnapshot(`Removida disjunção ${cls.label} ⊥ ${d}`);
+                refreshAllUI();
+            };
+        });
+
+        container.querySelectorAll("[data-nav-cls]").forEach((el) => {
+            el.onclick = () => selectEntity("class", el.getAttribute("data-nav-cls"), true);
+        });
+    } else if (kind === "objProp") {
+        const op = ontology.objProps.get(id);
+        if (!op) return;
+        container.innerHTML = `
+          <div class="section-card">
+            <div class="section-header"><span>Relação (ObjectProperty)</span><span class="badge-pill">${escapeHtml(id)}</span></div>
+            <div class="form-grid">
+              <label class="label-sm">Rótulo</label>
+              <input type="text" class="input" id="editOpLabel" value="${escapeHtml(op.label)}" />
+              <label class="label-sm">Domínio (rdfs:domain)</label>
+              <select class="select" id="editOpDomain">
+                <option value="">(Qualquer / owl:Thing)</option>
+                ${allClassIds.map((c) => `<option value="${escapeHtml(c)}" ${op.domain === c ? "selected" : ""}>${escapeHtml(c)}</option>`).join("")}
+              </select>
+              <label class="label-sm">Imagem (rdfs:range)</label>
+              <select class="select" id="editOpRange">
+                <option value="">(Qualquer / owl:Thing)</option>
+                ${allClassIds.map((c) => `<option value="${escapeHtml(c)}" ${op.range === c ? "selected" : ""}>${escapeHtml(c)}</option>`).join("")}
+              </select>
+              <div class="form-row" style="flex-wrap:wrap; font-size:11px; color:var(--text-muted);">
+                <label><input type="checkbox" id="editOpFunc" ${op.functional ? "checked" : ""} /> Funcional</label>
+                <label><input type="checkbox" id="editOpSym" ${op.symmetric ? "checked" : ""} /> Simétrica</label>
+                <label><input type="checkbox" id="editOpTrans" ${op.transitive ? "checked" : ""} /> Transitiva</label>
+                <label><input type="checkbox" id="editOpIrref" ${op.irreflexive ? "checked" : ""} /> Irreflexiva</label>
+                <label><input type="checkbox" id="editOpAsym" ${op.asymmetric ? "checked" : ""} /> Assimétrica</label>
+              </div>
+              <div class="form-row">
+                <button class="btn btn-primary btn-sm" id="btnSaveOp" style="flex:1;">💾 Salvar Relação</button>
+                <button class="btn btn-rose btn-sm" id="btnDeleteOp">🗑 Excluir</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        document.getElementById("btnSaveOp").onclick = () => {
+            op.label = document.getElementById("editOpLabel").value.trim() || op.id;
+            op.domain = document.getElementById("editOpDomain").value;
+            op.range = document.getElementById("editOpRange").value;
+            op.functional = document.getElementById("editOpFunc").checked;
+            op.symmetric = document.getElementById("editOpSym").checked;
+            op.transitive = document.getElementById("editOpTrans").checked;
+            op.irreflexive = document.getElementById("editOpIrref").checked;
+            op.asymmetric = document.getElementById("editOpAsym").checked;
+            createVersionSnapshot(`Editada relação: ${op.label}`);
+            refreshAllUI();
+            if (uiState.stageActive) render3DScene();
+            showToast("Relação atualizada.");
+        };
+
+        document.getElementById("btnDeleteOp").onclick = () => {
+            ontology.objProps.delete(id);
+            uiState.selectedId = null;
+            uiState.selectedKind = null;
+            createVersionSnapshot(`Excluída relação: ${id}`);
+            refreshAllUI();
+            if (uiState.stageActive) render3DScene();
+        };
+    } else if (kind === "dataProp") {
+        const dp = ontology.dataProps.get(id);
+        if (!dp) return;
+        container.innerHTML = `
+          <div class="section-card">
+            <div class="section-header"><span>Atributo (DataProperty)</span><span class="badge-pill">${escapeHtml(id)}</span></div>
+            <div class="form-grid">
+              <label class="label-sm">Rótulo</label>
+              <input type="text" class="input" id="editDpLabel" value="${escapeHtml(dp.label)}" />
+              <label class="label-sm">Domínio (Classe)</label>
+              <select class="select" id="editDpDomain">
+                <option value="">(Qualquer / owl:Thing)</option>
+                ${allClassIds.map((c) => `<option value="${escapeHtml(c)}" ${dp.domain === c ? "selected" : ""}>${escapeHtml(c)}</option>`).join("")}
+              </select>
+              <label class="label-sm">Tipo XSD</label>
+              <select class="select" id="editDpRange">
+                ${["xsd:string", "xsd:integer", "xsd:decimal", "xsd:boolean", "xsd:date", "xsd:dateTime", "xsd:anyURI"]
+                .map((dt) => `<option value="${dt}" ${dp.range === dt ? "selected" : ""}>${dt}</option>`)
+                .join("")}
+              </select>
+              <label style="font-size:11px; color:var(--text-muted);">
+                <input type="checkbox" id="editDpFunc" ${dp.functional ? "checked" : ""} /> Funcional
+              </label>
+              <div class="form-row">
+                <button class="btn btn-primary btn-sm" id="btnSaveDp" style="flex:1;">💾 Salvar Atributo</button>
+                <button class="btn btn-rose btn-sm" id="btnDeleteDp">🗑 Excluir</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        document.getElementById("btnSaveDp").onclick = () => {
+            dp.label = document.getElementById("editDpLabel").value.trim() || dp.id;
+            dp.domain = document.getElementById("editDpDomain").value;
+            dp.range = document.getElementById("editDpRange").value;
+            dp.functional = document.getElementById("editDpFunc").checked;
+            createVersionSnapshot(`Editado atributo: ${dp.label}`);
+            refreshAllUI();
+            if (uiState.stageActive) render3DScene();
+            showToast("Atributo atualizado.");
+        };
+
+        document.getElementById("btnDeleteDp").onclick = () => {
+            ontology.dataProps.delete(id);
+            uiState.selectedId = null;
+            uiState.selectedKind = null;
+            createVersionSnapshot(`Excluído atributo: ${id}`);
+            refreshAllUI();
+            if (uiState.stageActive) render3DScene();
+        };
+    } else if (kind === "individual") {
+        const ind = ontology.individuals.get(id);
+        if (!ind) return;
+        const allDPs = Array.from(ontology.dataProps.keys());
+        const allOPs = Array.from(ontology.objProps.keys());
+        const allInds = Array.from(ontology.individuals.keys());
+
+        container.innerHTML = `
+          <div class="section-card">
+            <div class="section-header"><span>Objeto / Indivíduo (A-BOX)</span><span class="badge-pill">${escapeHtml(id)}</span></div>
+            <div class="form-grid">
+              <label class="label-sm">Identificador / Rótulo</label>
+              <input type="text" class="input" id="editIndLabel" value="${escapeHtml(ind.label)}" />
+              <div class="form-row">
+                <button class="btn btn-primary btn-sm" id="btnSaveInd" style="flex:1;">💾 Salvar</button>
+                <button class="btn btn-rose btn-sm" id="btnDeleteInd">🗑 Excluir</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header"><span>Classes Instanciadas (rdf:type)</span></div>
+            <div class="chip-list">
+              ${Array.from(ind.types)
+                .map((t) => `<span class="chip">${escapeHtml(t)} <button data-rm-type="${escapeHtml(t)}">×</button></span>`)
+                .join("")}
+            </div>
+            <div class="form-row">
+              <select class="select" id="selAddIndType">
+                <option value="">+ Associar classe...</option>
+                ${allClassIds.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("")}
+              </select>
+              <button class="btn btn-sm" id="btnAddIndType">Adicionar</button>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header"><span>Atributos do Objeto (Data Values)</span></div>
+            <div class="tree-list">
+              ${ind.dataValues
+                .map(
+                    (dv, idx) => `
+                  <div class="tree-row">
+                    <span style="font-size:11.5px;"><strong>${escapeHtml(dv.prop)}</strong> = ${escapeHtml(dv.value)}</span>
+                    <button class="icon-mini-btn" data-rm-dv="${idx}">×</button>
+                  </div>`
+                )
+                .join("")}
+            </div>
+            <div class="form-grid">
+              <input type="text" class="input" id="newDvProp" list="dlExistingPredicates" placeholder="Atributo (ex.: idade)" />
+              <div class="form-row">
+                <input type="text" class="input" id="newDvVal" placeholder="Valor literal" />
+                <button class="btn btn-sm" id="btnAddDv">+</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header"><span>Relações com Outros Objetos</span></div>
+            <div class="tree-list">
+              ${ind.objLinks
+                .map(
+                    (lk, idx) => `
+                  <div class="tree-row">
+                    <span style="font-size:11.5px;"><strong>${escapeHtml(lk.prop)}</strong> → ${escapeHtml(lk.target)}</span>
+                    <button class="icon-mini-btn" data-rm-lk="${idx}">×</button>
+                  </div>`
+                )
+                .join("")}
+            </div>
+            <div class="form-grid">
+              <input type="text" class="input" id="newLkProp" list="dlExistingPredicates" placeholder="Relação (ex.: conhece)" />
+              <div class="form-row">
+                <select class="select" id="newLkTarget">
+                  ${allInds.map((t) => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("")}
+                </select>
+                <button class="btn btn-sm" id="btnAddLk">+</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        document.getElementById("btnSaveInd").onclick = () => {
+            ind.label = document.getElementById("editIndLabel").value.trim() || ind.id;
+            createVersionSnapshot(`Editado objeto: ${ind.label}`);
+            refreshAllUI();
+            if (uiState.stageActive) render3DScene();
+        };
+
+        document.getElementById("btnDeleteInd").onclick = () => {
+            ontology.individuals.delete(id);
+            uiState.selectedId = null;
+            uiState.selectedKind = null;
+            createVersionSnapshot(`Excluído objeto: ${id}`);
+            refreshAllUI();
+            if (uiState.stageActive) render3DScene();
+        };
+
+        document.getElementById("btnAddIndType").onclick = () => {
+            const t = document.getElementById("selAddIndType").value;
+            if (!t) return;
+            ind.types.add(t);
+            createVersionSnapshot(`Classe ${t} associada a ${ind.label}`);
+            refreshAllUI();
+            if (uiState.stageActive) render3DScene();
+        };
+
+        container.querySelectorAll("[data-rm-type]").forEach((btn) => {
+            btn.onclick = () => {
+                ind.types.delete(btn.getAttribute("data-rm-type"));
+                createVersionSnapshot(`Classe removida de ${ind.label}`);
+                refreshAllUI();
+                if (uiState.stageActive) render3DScene();
+            };
+        });
+
+        document.getElementById("btnAddDv").onclick = () => {
+            const prop = sanitizeId(document.getElementById("newDvProp").value);
+            const value = document.getElementById("newDvVal").value.trim();
+            if (!prop || !value) return;
+            const dp = ontology.dataProps.get(prop);
+            ind.dataValues.push({ prop, value, datatype: dp ? dp.range : "xsd:string" });
+            createVersionSnapshot(`Atributo ${prop} adicionado em ${ind.label}`);
+            refreshAllUI();
+            if (uiState.stageActive) render3DScene();
+        };
+
+        container.querySelectorAll("[data-rm-dv]").forEach((btn) => {
+            btn.onclick = () => {
+                ind.dataValues.splice(Number(btn.getAttribute("data-rm-dv")), 1);
+                createVersionSnapshot(`Atributo removido de ${ind.label}`);
+                refreshAllUI();
+                if (uiState.stageActive) render3DScene();
+            };
+        });
+
+        document.getElementById("btnAddLk").onclick = () => {
+            const prop = sanitizeId(document.getElementById("newLkProp").value);
+            const target = document.getElementById("newLkTarget").value;
+            if (!prop || !target) return;
+            ind.objLinks.push({ prop, target });
+            createVersionSnapshot(`Relação ${prop} → ${target} em ${ind.label}`);
+            refreshAllUI();
+            if (uiState.stageActive) render3DScene();
+        };
+
+        container.querySelectorAll("[data-rm-lk]").forEach((btn) => {
+            btn.onclick = () => {
+                ind.objLinks.splice(Number(btn.getAttribute("data-rm-lk")), 1);
+                createVersionSnapshot(`Relação removida de ${ind.label}`);
+                refreshAllUI();
+                if (uiState.stageActive) render3DScene();
+            };
+        });
+    }
+}
+
+function deleteClass(cid) {
+    if (cid === "owl:Thing") return;
+    ontology.classes.delete(cid);
+    for (const cls of ontology.classes.values()) {
+        cls.parents.delete(cid);
+        if (cls.parents.size === 0 && cls.id !== "owl:Thing") cls.parents.add("owl:Thing");
+        cls.disjointWith.delete(cid);
+    }
+    for (const op of ontology.objProps.values()) {
+        if (op.domain === cid) op.domain = "";
+        if (op.range === cid) op.range = "";
+    }
+    for (const dp of ontology.dataProps.values()) {
+        if (dp.domain === cid) dp.domain = "";
+    }
+    for (const ind of ontology.individuals.values()) {
+        ind.types.delete(cid);
+    }
+    if (uiState.selectedId === cid) {
+        uiState.selectedId = null;
+        uiState.selectedKind = null;
+    }
+    createVersionSnapshot(`Excluída classe: ${cid}`);
+    refreshAllUI();
+    if (uiState.stageActive) {
+        recompute3DLayout();
+        render3DScene();
+    }
+    showToast(`Classe "${cid}" excluída.`);
+}
+
+function refreshCreateDropdowns() {
+    const classIds = Array.from(ontology.classes.keys()).filter((c) => c !== "owl:Thing");
+    const classOpts =
+        `<option value="owl:Thing">owl:Thing (Raiz)</option>` +
+        classIds.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+
+    document.getElementById("newClassParent").innerHTML = classOpts;
+    document.getElementById("newObjPropDomain").innerHTML = classOpts;
+    document.getElementById("newObjPropRange").innerHTML = classOpts;
+    document.getElementById("newDataPropDomain").innerHTML = classOpts;
+    document.getElementById("newIndClass").innerHTML = classOpts;
+
+    // Atualiza datalists da modal de evolução
+    document.getElementById("dlExistingClasses").innerHTML = classIds
+        .map((c) => `<option value="${escapeHtml(c)}"></option>`)
+        .join("");
+    const allPreds = [
+        "rdfs:subClassOf",
+        "owl:disjointWith",
+        "rdf:type",
+        ...ontology.objProps.keys(),
+        ...ontology.dataProps.keys()
+    ];
+    document.getElementById("dlExistingPredicates").innerHTML = allPreds
+        .map((p) => `<option value="${escapeHtml(p)}"></option>`)
+        .join("");
+    const allObjs = [...classIds, ...ontology.individuals.keys(), "xsd:string", "xsd:integer", "xsd:decimal", "xsd:boolean", "xsd:date"];
+    document.getElementById("dlExistingObjects").innerHTML = allObjs
+        .map((o) => `<option value="${escapeHtml(o)}"></option>`)
+        .join("");
+}
+
+/* ==========================================================================
+   10. PARSER DE EVOLUÇÃO ONTOLÓGICA E MODAL INTERATIVA
+   ========================================================================== */
+function parseEvolutionTextToRows(rawText) {
+    const text = String(rawText || "").trim();
+    const triples = [];
+    if (!text) return triples;
+
+    function expandCombination(sItem, pItem, oItem) {
+        const sArr = Array.isArray(sItem) ? sItem.flat(Infinity) : [sItem];
+        const pArr = Array.isArray(pItem) ? pItem.flat(Infinity) : [pItem];
+        const oArr = Array.isArray(oItem) ? oItem.flat(Infinity) : [oItem];
+        for (const s of sArr) {
+            for (const p of pArr) {
+                for (const o of oArr) {
+                    const ss = localName(String(s || "").trim().replace(/^["']|["']$/g, ""));
+                    const pp = localName(String(p || "").trim().replace(/^["']|["']$/g, ""));
+                    const oo = localName(String(o || "").trim().replace(/^["']|["']$/g, ""));
+                    if (ss && pp && oo) triples.push([ss, pp, oo]);
+                }
+            }
+        }
+    }
+
+    // Tentativa 1: JSON ou array estilo Python
+    try {
+        const normalizedJson = text
+            .replace(/'/g, '"')
+            .replace(/,\s*([\]}])/g, "$1");
+        const parsed = JSON.parse(normalizedJson);
+        if (Array.isArray(parsed)) {
+            if (parsed.length === 3 && !Array.isArray(parsed[0]) && typeof parsed[1] === "string") {
+                expandCombination(parsed[0], parsed[1], parsed[2]);
+            } else {
+                for (const item of parsed) {
+                    if (Array.isArray(item) && item.length >= 3) {
+                        expandCombination(item[0], item[1], item[2]);
+                    } else if (item && typeof item === "object") {
+                        expandCombination(
+                            item.subject || item.sujeito || item.s,
+                            item.predicate || item.predicado || item.p,
+                            item.object || item.objeto || item.o
+                        );
+                    }
+                }
+            }
+            if (triples.length > 0) return triples;
+        }
+    } catch (_) {
+        // Fallback para linha a linha
+    }
+
+    // Tentativa 2: Linha a linha (CSV, TSV, N-Triples, [s, p, o])
+    const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    for (const line of lines) {
+        const stripped = line.replace(/^\[+|\]+,?$/g, "").replace(/\.$/, "").trim();
+        let parts = [];
+        if (stripped.includes("\t")) parts = stripped.split("\t");
+        else if (stripped.includes(";")) parts = stripped.split(";");
+        else if (stripped.includes("|")) parts = stripped.split("|");
+        else if (stripped.includes(",")) parts = stripped.split(",");
+        else parts = stripped.split(/\s+/);
+
+        if (parts.length >= 3) {
+            expandCombination(parts[0], parts[1], parts.slice(2).join(" "));
+        }
+    }
+    return triples;
+}
+
+function inferEvoRole(s, p, o) {
+    const pLow = p.toLowerCase();
+    if (pLow.includes("subclassof") || pLow === "isa" || pLow === "éum") return "tbox_sub";
+    if (pLow.includes("disjoint")) return "tbox_disj";
+    if (pLow === "type" || pLow === "rdf:type" || pLow === "instanciade") return "abox_type";
+    if (o.startsWith("xsd:")) return "tbox_data";
+    if (ontology.individuals.has(s) || ontology.individuals.has(o)) return "abox_rel";
+    if (ontology.dataProps.has(p)) return "abox_data";
+    return "tbox_rel";
+}
+
+function openEvolutionModal(initialTriples = []) {
+    if (initialTriples.length > 0) {
+        evoRows = initialTriples.map(([s, p, o]) => ({
+            enabled: true,
+            role: inferEvoRole(s, p, o),
+            s,
+            p,
+            o
+        }));
+    } else if (evoRows.length === 0) {
+        evoRows = [{ enabled: true, role: "tbox_rel", s: "", p: "", o: "" }];
+    }
+    renderEvoTable();
+    document.getElementById("evoModal").classList.add("open");
+}
+
+function renderEvoTable() {
+    const tbody = document.getElementById("evoTableBody");
+    tbody.innerHTML = "";
+
+    evoRows.forEach((row, idx) => {
+        const sExists = ontology.classes.has(row.s) || ontology.individuals.has(row.s);
+        const pExists =
+            ontology.objProps.has(row.p) ||
+            ontology.dataProps.has(row.p) ||
+            ["rdfs:subClassOf", "owl:disjointWith", "rdf:type"].includes(row.p);
+        const oExists =
+            ontology.classes.has(row.o) || ontology.individuals.has(row.o) || row.o.startsWith("xsd:");
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><input type="checkbox" ${row.enabled ? "checked" : ""} data-evo-chk="${idx}" /></td>
+          <td>
+            <select class="select" data-evo-role="${idx}">
+              <option value="tbox_rel" ${row.role === "tbox_rel" ? "selected" : ""}>T-BOX: Relação (Class→Class)</option>
+              <option value="tbox_sub" ${row.role === "tbox_sub" ? "selected" : ""}>T-BOX: Hierarquia (subClassOf)</option>
+              <option value="tbox_disj" ${row.role === "tbox_disj" ? "selected" : ""}>T-BOX: Disjunção (disjointWith)</option>
+              <option value="tbox_data" ${row.role === "tbox_data" ? "selected" : ""}>T-BOX: Atributo (DataProperty)</option>
+              <option value="abox_type" ${row.role === "abox_type" ? "selected" : ""}>A-BOX: Instância (rdf:type)</option>
+              <option value="abox_rel" ${row.role === "abox_rel" ? "selected" : ""}>A-BOX: Relação entre Objetos</option>
+              <option value="abox_data" ${row.role === "abox_data" ? "selected" : ""}>A-BOX: Valor de Atributo</option>
+            </select>
+          </td>
+          <td>
+            <input type="text" class="input" list="dlExistingClasses" value="${escapeHtml(row.s)}" data-evo-s="${idx}" placeholder="Sujeito" />
+            <div class="term-status ${sExists ? "exists" : "is-new"}">${row.s ? (sExists ? "✓ Existente" : "✨ Novo termo") : ""}</div>
+          </td>
+          <td>
+            <input type="text" class="input" list="dlExistingPredicates" value="${escapeHtml(row.p)}" data-evo-p="${idx}" placeholder="Predicado" />
+            <div class="term-status ${pExists ? "exists" : "is-new"}">${row.p ? (pExists ? "✓ Existente" : "✨ Nova relação") : ""}</div>
+          </td>
+          <td>
+            <input type="text" class="input" list="dlExistingObjects" value="${escapeHtml(row.o)}" data-evo-o="${idx}" placeholder="Objeto / Tipo" />
+            <div class="term-status ${oExists ? "exists" : "is-new"}">${row.o ? (oExists ? "✓ Existente" : "✨ Novo termo") : ""}</div>
+          </td>
+          <td>
+            <div style="display:flex; gap:3px;">
+              <button class="icon-mini-btn" data-evo-swap="${idx}" title="Inverter S ↔ O">⇄</button>
+              <button class="icon-mini-btn" data-evo-dup="${idx}" title="Duplicar">⧉</button>
+              <button class="icon-mini-btn" data-evo-del="${idx}" title="Remover" style="color:var(--accent-rose);">✕</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    const activeCount = evoRows.filter((r) => r.enabled && r.s && r.p && r.o).length;
+    document.getElementById("evoSummaryText").textContent = `${activeCount} tripla(s) ativa(s) pronta(s) para evolução`;
+
+    tbody.querySelectorAll("[data-evo-chk]").forEach((el) => {
+        el.onchange = () => {
+            evoRows[Number(el.getAttribute("data-evo-chk"))].enabled = el.checked;
+            renderEvoTable();
+        };
+    });
+    tbody.querySelectorAll("[data-evo-role]").forEach((el) => {
+        el.onchange = () => {
+            evoRows[Number(el.getAttribute("data-evo-role"))].role = el.value;
+        };
+    });
+    tbody.querySelectorAll("[data-evo-s]").forEach((el) => {
+        el.onchange = () => {
+            evoRows[Number(el.getAttribute("data-evo-s"))].s = el.value.trim();
+            renderEvoTable();
+        };
+    });
+    tbody.querySelectorAll("[data-evo-p]").forEach((el) => {
+        el.onchange = () => {
+            evoRows[Number(el.getAttribute("data-evo-p"))].p = el.value.trim();
+            renderEvoTable();
+        };
+    });
+    tbody.querySelectorAll("[data-evo-o]").forEach((el) => {
+        el.onchange = () => {
+            evoRows[Number(el.getAttribute("data-evo-o"))].o = el.value.trim();
+            renderEvoTable();
+        };
+    });
+    tbody.querySelectorAll("[data-evo-swap]").forEach((el) => {
+        el.onclick = () => {
+            const r = evoRows[Number(el.getAttribute("data-evo-swap"))];
+            [r.s, r.o] = [r.o, r.s];
+            renderEvoTable();
+        };
+    });
+    tbody.querySelectorAll("[data-evo-dup]").forEach((el) => {
+        el.onclick = () => {
+            const i = Number(el.getAttribute("data-evo-dup"));
+            evoRows.splice(i + 1, 0, { ...evoRows[i] });
+            renderEvoTable();
+        };
+    });
+    tbody.querySelectorAll("[data-evo-del]").forEach((el) => {
+        el.onclick = () => {
+            evoRows.splice(Number(el.getAttribute("data-evo-del")), 1);
+            renderEvoTable();
+        };
+    });
+}
+
+function applyEvolutionRows() {
+    ensureOwlThing();
+    const active = evoRows.filter((r) => r.enabled && r.s && r.p && r.o);
+    if (active.length === 0) {
+        showToast("Nenhuma tripla ativa válida para aplicar.");
+        return;
+    }
+
+    const ensureClassQuick = (raw) => {
+        const id = sanitizeId(raw);
+        if (!ontology.classes.has(id)) {
+            ontology.classes.set(id, {
+                id,
+                label: raw.trim(),
+                comment: "",
+                parents: new Set(["owl:Thing"]),
+                disjointWith: new Set(),
+                color: pickColor(ontology.classes.size),
+                expanded: false,
+                hidden: false,
+                x: 0,
+                y: 0,
+                z: 0,
+                cellW: 215,
+                cellD: 100
+            });
+        }
+        return id;
+    };
+
+    const ensureIndQuick = (raw) => {
+        const id = sanitizeId(raw);
+        if (!ontology.individuals.has(id)) {
+            ontology.individuals.set(id, {
+                id,
+                label: raw.trim(),
+                types: new Set(["owl:Thing"]),
+                dataValues: [],
+                objLinks: [],
+                hidden: false,
+                x: 0,
+                y: 0,
+                z: 0
+            });
+        }
+        return id;
+    };
+
+    let firstFocusedClass = null;
+
+    for (const r of active) {
+        if (r.role === "tbox_sub") {
+            const subId = ensureClassQuick(r.s);
+            const supId = ensureClassQuick(r.o);
+            const subCls = ontology.classes.get(subId);
+            subCls.parents.delete("owl:Thing");
+            subCls.parents.add(supId);
+            ontology.classes.get(supId).expanded = true;
+            if (!firstFocusedClass) firstFocusedClass = supId;
+        } else if (r.role === "tbox_disj") {
+            const cA = ensureClassQuick(r.s);
+            const cB = ensureClassQuick(r.o);
+            ontology.classes.get(cA).disjointWith.add(cB);
+            ontology.classes.get(cB).disjointWith.add(cA);
+            if (!firstFocusedClass) firstFocusedClass = cA;
+        } else if (r.role === "tbox_rel") {
+            const domId = ensureClassQuick(r.s);
+            const rngId = ensureClassQuick(r.o);
+            const propId = sanitizeId(r.p);
+            if (!ontology.objProps.has(propId)) {
+                ontology.objProps.set(propId, {
+                    id: propId,
+                    label: r.p.trim(),
+                    domain: domId,
+                    range: rngId,
+                    inverseOf: "",
+                    functional: false,
+                    symmetric: false,
+                    transitive: false,
+                    irreflexive: false,
+                    asymmetric: false
+                });
+            } else {
+                const op = ontology.objProps.get(propId);
+                op.domain = domId;
+                op.range = rngId;
+            }
+            if (!firstFocusedClass) firstFocusedClass = domId;
+        } else if (r.role === "tbox_data") {
+            const domId = ensureClassQuick(r.s);
+            const propId = sanitizeId(r.p);
+            const dt = r.o.startsWith("xsd:") ? r.o : "xsd:string";
+            ontology.dataProps.set(propId, {
+                id: propId,
+                label: r.p.trim(),
+                domain: domId,
+                range: dt,
+                functional: false
+            });
+            if (!firstFocusedClass) firstFocusedClass = domId;
+        } else if (r.role === "abox_type") {
+            const indId = ensureIndQuick(r.s);
+            const clsId = ensureClassQuick(r.o);
+            const ind = ontology.individuals.get(indId);
+            ind.types.delete("owl:Thing");
+            ind.types.add(clsId);
+            if (!firstFocusedClass) firstFocusedClass = clsId;
+        } else if (r.role === "abox_rel") {
+            const sInd = ensureIndQuick(r.s);
+            const oInd = ensureIndQuick(r.o);
+            const propId = sanitizeId(r.p);
+            ontology.individuals.get(sInd).objLinks.push({ prop: propId, target: oInd });
+        } else if (r.role === "abox_data") {
+            const sInd = ensureIndQuick(r.s);
+            const propId = sanitizeId(r.p);
+            ontology.individuals.get(sInd).dataValues.push({ prop: propId, value: r.o, datatype: "xsd:string" });
+        }
+    }
+
+    document.getElementById("evoModal").classList.remove("open");
+    createVersionSnapshot(`Evolução (+${active.length} triplas)`);
+    refreshAllUI();
+
+    if (firstFocusedClass) {
+        uiState.treeRootId = firstFocusedClass;
+        selectEntity("class", firstFocusedClass, true);
+    }
+    showToast(`Evolução aplicada: ${active.length} tripla(s) incorporada(s) em nova versão!`);
+}
+
+/* ==========================================================================
+   11. SINCRONIZAÇÃO DE UI E EVENTOS DE CONTROLE
+   ========================================================================== */
+function switchLeftTab(tabName) {
+    uiState.leftTab = tabName;
+    document.querySelectorAll("[data-left-tab]").forEach((b) => {
+        b.classList.toggle("active", b.getAttribute("data-left-tab") === tabName);
+    });
+    document.getElementById("leftTabExplorer").style.display = tabName === "explorer" ? "flex" : "none";
+    document.getElementById("leftTabVersions").style.display = tabName === "versions" ? "flex" : "none";
+}
+
+function switchRightTab(tabName) {
+    uiState.rightTab = tabName;
+    document.querySelectorAll("[data-right-tab]").forEach((b) => {
+        b.classList.toggle("active", b.getAttribute("data-right-tab") === tabName);
+    });
+    document.getElementById("rightTabInspector").style.display = tabName === "inspector" ? "flex" : "none";
+    document.getElementById("rightTabCreate").style.display = tabName === "create" ? "flex" : "none";
+    document.getElementById("rightTabValidator").style.display = tabName === "validator" ? "flex" : "none";
+    document.getElementById("rightTabConfig").style.display = tabName === "config" ? "flex" : "none";
+
+    if (tabName === "config") {
+        document.getElementById("owlXmlEditor").value = serializeToOWLRDF();
+    }
+}
+
+function syncCameraButtons() {
+    document.getElementById("camTBoxBtn").classList.toggle("active-toggle", uiState.viewMode === "tbox");
+    document.getElementById("camABoxBtn").classList.toggle("active-toggle", uiState.viewMode === "abox");
+    document.getElementById("camYXBtn").classList.toggle("active-toggle", uiState.viewMode === "yx");
+    document.getElementById("camZXBtn").classList.toggle("active-toggle", uiState.viewMode === "zx");
+    document.getElementById("camFreeBtn").classList.toggle("active-toggle", uiState.viewMode === "free");
+}
+
+function syncIsolateUI() {
+    const btn = document.getElementById("btnIsolateToggle");
+    btn.classList.toggle("active-toggle", uiState.isolateNeighborhood);
+    btn.textContent = uiState.isolateNeighborhood ? "🎯 Isolar: ON" : "🎯 Isolar: OFF";
+}
+
+function syncDiffUI() {
+    const active = versionState.showDiff;
+    const only = versionState.onlyChanged;
+    const b1 = document.getElementById("btnHudDiffToggle");
+    const b2 = document.getElementById("btnToggleDiffPanel");
+    const o1 = document.getElementById("btnHudOnlyChanged");
+    const o2 = document.getElementById("btnOnlyChangedPanel");
+
+    b1.classList.toggle("active-toggle", active);
+    b2.classList.toggle("active-toggle", active);
+    b2.textContent = active ? "🔍 Destaque Diff: ON" : "🔍 Destaque Diff: OFF";
+
+    o1.classList.toggle("active-toggle", only);
+    o2.classList.toggle("active-toggle", only);
+}
+
+function updateWorkspacePanels() {
+    const ws = document.getElementById("workspace");
+    ws.classList.remove("hide-left", "hide-right", "hide-both");
+    if (!uiState.panelLeftOpen && !uiState.panelRightOpen) ws.classList.add("hide-both");
+    else if (!uiState.panelLeftOpen) ws.classList.add("hide-left");
+    else if (!uiState.panelRightOpen) ws.classList.add("hide-right");
+
+    document.getElementById("btnToggleLeft").classList.toggle("active-toggle", uiState.panelLeftOpen);
+    document.getElementById("btnToggleRight").classList.toggle("active-toggle", uiState.panelRightOpen);
+    setTimeout(() => {
+        if (uiState.stageActive) fitCameraToVisibleNodes();
+        render3DScene();
+    }, 220);
+}
+
+function refreshAllUI() {
+    const realClasses = Math.max(0, ontology.classes.size - 1);
+    document.getElementById("ontoIriLabel").textContent =
+        realClasses > 0
+            ? `${ontology.iri} (${realClasses} classes, ${ontology.objProps.size} relações)`
+            : "Ontologia vazia — carregue um .OWL/.RDF ou crie entidades";
+
+    updateEmptyStageOverlay();
+    refreshExplorerTrees();
+    refreshCreateDropdowns();
+    renderVersionPanel();
+    renderInspector();
+    validateOntologyRules();
+    if (uiState.rightTab === "config") {
+        document.getElementById("owlXmlEditor").value = serializeToOWLRDF();
+    }
+    render3DScene();
+}
+
+function bindAllEvents() {
+    // Abas laterais
+    document.querySelectorAll("[data-left-tab]").forEach((btn) => {
+        btn.onclick = () => switchLeftTab(btn.getAttribute("data-left-tab"));
+    });
+    document.querySelectorAll("[data-right-tab]").forEach((btn) => {
+        btn.onclick = () => switchRightTab(btn.getAttribute("data-right-tab"));
+    });
+
+    // Painéis recolhíveis
+    document.getElementById("btnToggleLeft").onclick = () => {
+        uiState.panelLeftOpen = !uiState.panelLeftOpen;
+        updateWorkspacePanels();
+    };
+    document.getElementById("btnToggleRight").onclick = () => {
+        uiState.panelRightOpen = !uiState.panelRightOpen;
+        updateWorkspacePanels();
+    };
+    document.getElementById("btnExpandStage").onclick = () => {
+        const anyOpen = uiState.panelLeftOpen || uiState.panelRightOpen;
+        uiState.panelLeftOpen = !anyOpen;
+        uiState.panelRightOpen = !anyOpen;
+        updateWorkspacePanels();
+    };
+
+    // Carregar arquivo .OWL / .RDF
+    /*const owlInput = document.getElementById("owlFileInput");
+    document.getElementById("btnLoadOwl").onclick = () => owlInput.click();
+    owlInput.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            try {
+                parseOWLRDF(ev.target.result, file.name);
+            } catch (err) {
+                showToast("Erro ao ler arquivo: " + err.message);
+            }
+        };
+        reader.readAsText(file);
+        owlInput.value = "";
+    };*/
+    document.getElementById("owlFileInput").addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // 1. Lê o arquivo localmente (renderização imediata no 3D)
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+        try {
+            parseOWLRDF(evt.target.result, file.name);
+        } catch (err) {
+            showToast("Erro ao ler OWL/RDF: " + err.message);
+            return;
+        }
+
+        // 2. Envia o arquivo para o servidor Flask salvar (opcional)
+        try {
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const resp = await fetch("/upload-owl", {
+                method: "POST",
+                body: formData
+            });
+
+            if (resp.ok) {
+                const data = await resp.json();
+                showToast("Ontologia salva no servidor: " + data.message);
+            } else {
+                const err = await resp.json();
+                showToast("Aviso: arquivo carregado localmente, mas não salvo no servidor. " + err.error);
+            }
+        } catch (fetchErr) {
+            console.warn("Falha ao enviar arquivo ao servidor:", fetchErr);
+        }
+    };
+    reader.readAsText(file);
 });
-if (document.readyState === 'complete') {
-    setTimeout(init, 30);
+
+    // Carregar arquivo de Evolução
+    const evoInput = document.getElementById("evoFileInput");
+    document.getElementById("btnLoadEvoFile").onclick = () => evoInput.click();
+    evoInput.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const text = ev.target.result;
+            document.getElementById("rawEvoTextarea").value = text;
+            const triples = parseEvolutionTextToRows(text);
+            openEvolutionModal(triples);
+        };
+        reader.readAsText(file);
+        evoInput.value = "";
+    };
+
+    document.getElementById("btnOpenEvoModal").onclick = () => openEvolutionModal([]);
+    document.getElementById("btnCloseEvoModal").onclick = () => document.getElementById("evoModal").classList.remove("open");
+    document.getElementById("btnCancelEvo").onclick = () => document.getElementById("evoModal").classList.remove("open");
+
+    document.getElementById("btnAddEmptyEvoRow").onclick = () => {
+        evoRows.push({ enabled: true, role: "tbox_rel", s: "", p: "", o: "" });
+        renderEvoTable();
+    };
+    document.getElementById("btnParseRawEvo").onclick = () => {
+        const triples = parseEvolutionTextToRows(document.getElementById("rawEvoTextarea").value);
+        if (triples.length === 0) {
+            showToast("Nenhuma tripla reconhecida no texto.");
+            return;
+        }
+        evoRows = triples.map(([s, p, o]) => ({
+            enabled: true,
+            role: inferEvoRole(s, p, o),
+            s,
+            p,
+            o
+        }));
+        renderEvoTable();
+    };
+    document.getElementById("btnApplyEvo").onclick = applyEvolutionRows;
+
+    // Exportar .OWL
+    document.getElementById("btnDownloadOwl").onclick = () => {
+        const xml = serializeToOWLRDF();
+        const blob = new Blob([xml], { type: "application/rdf+xml;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "ontologia_ontocube.owl";
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast("Arquivo .OWL exportado.");
+    };
+
+    // Busca e Expandir/Colapsar Tudo na Árvore
+    document.getElementById("searchInput").oninput = (e) => {
+        uiState.searchQuery = e.target.value;
+        refreshExplorerTrees();
+    };
+    document.getElementById("btnExpandAll").onclick = () => {
+        for (const cls of ontology.classes.values()) cls.expanded = true;
+        refreshExplorerTrees();
+        if (uiState.stageActive) {
+            recompute3DLayout();
+            fitCameraToVisibleNodes();
+            render3DScene();
+        }
+    };
+    document.getElementById("btnCollapseAll").onclick = () => {
+        for (const [cid, cls] of ontology.classes.entries()) {
+            cls.expanded = cid === "owl:Thing";
+        }
+        refreshExplorerTrees();
+        if (uiState.stageActive) {
+            recompute3DLayout();
+            fitCameraToVisibleNodes();
+            render3DScene();
+        }
+    };
+
+    // Controles de Câmera e Palco
+    document.getElementById("camTBoxBtn").onclick = () => setCameraPreset("tbox");
+    document.getElementById("camABoxBtn").onclick = () => setCameraPreset("abox");
+    document.getElementById("camYXBtn").onclick = () => setCameraPreset("yx");
+    document.getElementById("camZXBtn").onclick = () => setCameraPreset("zx");
+    document.getElementById("camFreeBtn").onclick = () => setCameraPreset("free");
+
+    document.getElementById("btnIsolateToggle").onclick = () => {
+        uiState.isolateNeighborhood = !uiState.isolateNeighborhood;
+        syncIsolateUI();
+        if (uiState.stageActive) {
+            recompute3DLayout();
+            fitCameraToVisibleNodes();
+            render3DScene();
+        }
+    };
+
+    document.getElementById("btnSubClassMode").onclick = () => {
+        const modes = ["selected", "all", "none"];
+        const labels = {
+            selected: "↕ SubClassOf: Selecionada",
+            all: "↕ SubClassOf: Todas",
+            none: "↕ SubClassOf: Ocultas"
+        };
+        const next = modes[(modes.indexOf(uiState.subClassMode) + 1) % modes.length];
+        uiState.subClassMode = next;
+        document.getElementById("btnSubClassMode").textContent = labels[next];
+        render3DScene();
+    };
+
+    document.getElementById("btnShowAllStage").onclick = showAllOntologyOnStage;
+
+    document.getElementById("btnClearStage").onclick = () => {
+        uiState.stageActive = false;
+        uiState.selectedId = null;
+        uiState.selectedKind = null;
+        uiState.treeRootId = null;
+        updateEmptyStageOverlay();
+        refreshExplorerTrees();
+        renderInspector();
+        render3DScene();
+    };
+
+    document.getElementById("btnFitView").onclick = () => {
+        fitCameraToVisibleNodes();
+        render3DScene();
+    };
+
+    document.getElementById("btnMoreSpace").onclick = () => {
+        uiState.spreadXZ = Math.min(4.5, +(uiState.spreadXZ + 0.35).toFixed(2));
+        uiState.spreadY = Math.min(3.5, +(uiState.spreadY + 0.25).toFixed(2));
+        document.getElementById("rangeSpreadXZ").value = Math.round(uiState.spreadXZ * 100);
+        document.getElementById("lblSpreadXZ").textContent = Math.round(uiState.spreadXZ * 100) + "%";
+        document.getElementById("rangeSpreadY").value = Math.round(uiState.spreadY * 100);
+        document.getElementById("lblSpreadY").textContent = Math.round(uiState.spreadY * 100) + "%";
+        if (uiState.stageActive) {
+            recompute3DLayout();
+            fitCameraToVisibleNodes();
+            render3DScene();
+        }
+    };
+
+    document.getElementById("btnZoomOut").onclick = () => {
+        camera.distance = Math.min(60000, camera.distance * 1.3);
+        render3DScene();
+    };
+    document.getElementById("btnZoomIn").onclick = () => {
+        camera.distance = Math.max(240, camera.distance * 0.76);
+        render3DScene();
+    };
+
+    // Navegação de Versões e Diff
+    document.getElementById("btnPrevVersion").onclick = () => navigateToVersion(versionState.activeIndex - 1);
+    document.getElementById("btnNextVersion").onclick = () => navigateToVersion(versionState.activeIndex + 1);
+    document.getElementById("baseVersionSelect").onchange = (e) => {
+        versionState.baseIndex = Number(e.target.value);
+        recomputeDiff();
+        refreshAllUI();
+    };
+
+    const toggleDiffFn = () => {
+        versionState.showDiff = !versionState.showDiff;
+        syncDiffUI();
+        refreshExplorerTrees();
+        renderVersionPanel();
+        render3DScene();
+    };
+    const toggleOnlyChangedFn = () => {
+        versionState.onlyChanged = !versionState.onlyChanged;
+        syncDiffUI();
+        refreshExplorerTrees();
+        render3DScene();
+    };
+    document.getElementById("btnHudDiffToggle").onclick = toggleDiffFn;
+    document.getElementById("btnToggleDiffPanel").onclick = toggleDiffFn;
+    document.getElementById("btnHudOnlyChanged").onclick = toggleOnlyChangedFn;
+    document.getElementById("btnOnlyChangedPanel").onclick = toggleOnlyChangedFn;
+
+    // CRUD: Criar Entidades
+    document.getElementById("btnCreateClass").onclick = () => {
+        const raw = document.getElementById("newClassName").value.trim();
+        if (!raw) return showToast("Informe o nome da classe.");
+        const id = sanitizeId(raw);
+        if (ontology.classes.has(id)) return showToast("Já existe uma classe com esse identificador.");
+        const parentId = document.getElementById("newClassParent").value || "owl:Thing";
+        const comment = document.getElementById("newClassComment").value.trim();
+
+        ontology.classes.set(id, {
+            id,
+            label: raw,
+            comment,
+            parents: new Set([parentId]),
+            disjointWith: new Set(),
+            color: pickColor(ontology.classes.size),
+            expanded: false,
+            hidden: false,
+            x: 0,
+            y: 0,
+            z: 0,
+            cellW: 215,
+            cellD: 100
+        });
+        if (ontology.classes.has(parentId)) ontology.classes.get(parentId).expanded = true;
+
+        document.getElementById("newClassName").value = "";
+        document.getElementById("newClassComment").value = "";
+        createVersionSnapshot(`Criada classe: ${raw}`);
+        refreshAllUI();
+        selectEntity("class", id, true);
+        showToast(`Classe "${raw}" criada.`);
+    };
+
+    document.getElementById("btnCreateObjProp").onclick = () => {
+        const raw = document.getElementById("newObjPropName").value.trim();
+        if (!raw) return showToast("Informe o nome da relação.");
+        const id = sanitizeId(raw);
+        ontology.objProps.set(id, {
+            id,
+            label: raw,
+            domain: document.getElementById("newObjPropDomain").value,
+            range: document.getElementById("newObjPropRange").value,
+            inverseOf: "",
+            functional: document.getElementById("newObjPropFunc").checked,
+            symmetric: document.getElementById("newObjPropSym").checked,
+            transitive: document.getElementById("newObjPropTrans").checked,
+            irreflexive: document.getElementById("newObjPropIrref").checked,
+            asymmetric: document.getElementById("newObjPropAsym").checked
+        });
+        document.getElementById("newObjPropName").value = "";
+        createVersionSnapshot(`Criada relação: ${raw}`);
+        refreshAllUI();
+        selectEntity("objProp", id, true);
+        showToast(`Relação "${raw}" criada.`);
+    };
+
+    document.getElementById("btnCreateDataProp").onclick = () => {
+        const raw = document.getElementById("newDataPropName").value.trim();
+        if (!raw) return showToast("Informe o nome do atributo.");
+        const id = sanitizeId(raw);
+        ontology.dataProps.set(id, {
+            id,
+            label: raw,
+            domain: document.getElementById("newDataPropDomain").value,
+            range: document.getElementById("newDataPropRange").value,
+            functional: document.getElementById("newDataPropFunc").checked
+        });
+        document.getElementById("newDataPropName").value = "";
+        createVersionSnapshot(`Criado atributo: ${raw}`);
+        refreshAllUI();
+        selectEntity("dataProp", id, true);
+        showToast(`Atributo "${raw}" criado.`);
+    };
+
+    document.getElementById("btnCreateInd").onclick = () => {
+        const raw = document.getElementById("newIndName").value.trim();
+        if (!raw) return showToast("Informe o identificador do objeto.");
+        const id = sanitizeId(raw);
+        const clsId = document.getElementById("newIndClass").value || "owl:Thing";
+        ontology.individuals.set(id, {
+            id,
+            label: raw,
+            types: new Set([clsId]),
+            dataValues: [],
+            objLinks: [],
+            hidden: false,
+            x: 0,
+            y: 0,
+            z: 0
+        });
+        document.getElementById("newIndName").value = "";
+        createVersionSnapshot(`Criado objeto: ${raw}`);
+        refreshAllUI();
+        selectEntity("individual", id, true);
+        showToast(`Objeto "${raw}" criado.`);
+    };
+
+    // Configurações 3D e XML
+    document.getElementById("rangeSpreadXZ").oninput = (e) => {
+        uiState.spreadXZ = Number(e.target.value) / 100;
+        document.getElementById("lblSpreadXZ").textContent = e.target.value + "%";
+        if (uiState.stageActive) {
+            recompute3DLayout();
+            render3DScene();
+        }
+    };
+    document.getElementById("rangeSpreadY").oninput = (e) => {
+        uiState.spreadY = Number(e.target.value) / 100;
+        document.getElementById("lblSpreadY").textContent = e.target.value + "%";
+        if (uiState.stageActive) {
+            recompute3DLayout();
+            render3DScene();
+        }
+    };
+    document.getElementById("chkShowOwlThing").onchange = (e) => {
+        uiState.showOwlThing = e.target.checked;
+        if (uiState.stageActive) {
+            recompute3DLayout();
+            render3DScene();
+        }
+    };
+    document.getElementById("chkAutoOcclude").onchange = (e) => {
+        uiState.autoOcclude = e.target.checked;
+        if (uiState.stageActive) render3DScene();
+    };
+    document.getElementById("chkShowBoundaries").onchange = (e) => {
+        uiState.showBoundaries = e.target.checked;
+        if (uiState.stageActive) render3DScene();
+    };
+
+    document.getElementById("btnApplyXml").onclick = () => {
+        try {
+            parseOWLRDF(document.getElementById("owlXmlEditor").value, "Edição XML Manual");
+        } catch (err) {
+            showToast(err.message);
+        }
+    };
+
+    document.getElementById("btnRunValidator").onclick = () => {
+        validateOntologyRules();
+        showToast("Validação de regras concluída.");
+    };
+
+    window.addEventListener("resize", () => render3DScene());
 }
+
+/* ==========================================================================
+   12. INICIALIZAÇÃO
+   ========================================================================== */
+window.addEventListener("DOMContentLoaded", () => {
+    bindAllEvents();
+    setupCanvasInteractions();
+    initEmptyOntology();
+});
