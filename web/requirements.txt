@@ -1,1 +1,5 @@
-Flask==3.0.2
+Flask
+rdflib
+neo4j
+psycopg2-binary
+pymongo

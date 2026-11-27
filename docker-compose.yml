@@ -38,22 +38,24 @@ services:
       - mongo_data:/data/db
 
   flask_app:
-    build: .  # Usa o Dockerfile da raiz
+    build: .
     container_name: flask_app
     ports:
       - "5000:5000"
+    environment:
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=senha_forte_neo4j
+      - PG_DSN=host=postgres dbname=meubanco user=admin password=senha_forte_postgres
+      - MONGO_URI=mongodb://admin:senha_forte_mongo@mongo:27017/ontocube?authSource=admin
+      - MONGO_DB=ontocube
+    volumes:
+      - ./web:/app
+      - ./web/ontology:/app/ontology
     depends_on:
       - neo4j
       - postgres
       - mongo
-    volumes:
-      - ./web/temp:/app/temp    # Persiste os .owl enviados no host
-      # DICA EXTRA: Isso mapeia a sua pasta local para o container.
-      # Assim, se você alterar o HTML ou o app.py, não precisa rebuildar a imagem.
-      - ./web:/app
-    # Se precisar conectar aos bancos, use os nomes dos serviços como host:
-    # environment:
-    #   - DATABASE_URL=postgresql://admin:senha_forte_postgres@postgres:5432/meubanco
 
 # Define os volumes para persistência dos dados (evita perder dados ao parar containers)
 volumes:
