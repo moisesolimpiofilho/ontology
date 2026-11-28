@@ -17,7 +17,10 @@
       </div>
     </div>
 
-    <div class="toolbar-group">
+    <!-- Ferramentas numa linha só; em telas estreitas rolam pelas setas laterais (sem barra de rolagem) -->
+    <div class="toolbar-scroll" id="toolbarScroll">
+    <button class="toolbar-arrow toolbar-arrow-left" id="toolbarArrowLeft" type="button" aria-label="Rolar ferramentas para a esquerda" tabindex="-1">‹</button>
+    <div class="toolbar-group" id="toolbarGroup">
       <input type="file" id="owlFileInput" accept=".owl,.rdf,.xml,.rdfs" hidden />
       <button class="btn btn-primary" id="btnLoadOwl" title="Carregar arquivo .owl ou .rdf">
         📂 Carregar .OWL/.RDF
@@ -35,10 +38,19 @@
         💾 Exportar .OWL
       </button>
 
+      <button class="btn btn-amber" id="btnOpenGov" title="Ontologias, solicitações, validação, versões, Version Log/CDL e Agente LLM">
+        🏛️ Governança
+      </button>
+
       <button class="btn active-toggle" id="btnToggleLeft" title="Alternar painel Explorador">◧ Explorador</button>
       <button class="btn active-toggle" id="btnToggleRight" title="Alternar painel Inspetor/Editor">◨ Inspetor</button>
       <button class="btn" id="btnExpandStage" title="Ampliar palco 3D">⛶ Ampliar 3D</button>
     </div>
+    <button class="toolbar-arrow toolbar-arrow-right" id="toolbarArrowRight" type="button" aria-label="Rolar ferramentas para a direita" tabindex="-1">›</button>
+    </div>
+
+    <!-- Fora do grupo de ferramentas: fica sempre visível à direita, mesmo em telas estreitas -->
+    <div class="auth-area" id="authArea"></div>
   </header>
 
   <!-- ==================== ÁREA PRINCIPAL ==================== -->
@@ -169,6 +181,16 @@
 
       <!-- TOOLTIP DE RELAÇÃO NO HOVER -->
       <div class="edge-tooltip" id="edgeTooltip"></div>
+
+      <!-- FAIXAS: MODO VISITANTE E CONTEXTO DA PROPOSTA EM EDIÇÃO -->
+      <div class="stage-banners">
+        <div class="visitor-banner" id="visitorBanner" hidden>
+          <span>👀 <strong>Modo visitante:</strong> você pode explorar, criar e editar, mas <strong>nada é salvo</strong>.
+            Ao recarregar a página (F5), tudo o que fez é perdido.</span>
+          <button class="btn btn-sm btn-primary" id="btnVisitorLogin">Entrar para salvar</button>
+        </div>
+        <div class="context-bar" id="govContextBar" hidden></div>
+      </div>
 
       <!-- HUD INFERIOR: NAVEGAÇÃO DE VERSÕES E LEGENDA -->
       <div class="hud-bottom">
@@ -376,8 +398,88 @@
   <datalist id="dlExistingPredicates"></datalist>
   <datalist id="dlExistingObjects"></datalist>
 
+  <!-- ==================== MODAL DE LOGIN (OPCIONAL) ==================== -->
+  <div class="modal-backdrop" id="authModal">
+    <div class="modal-box auth-box">
+      <div class="modal-header">
+        <strong style="font-size:14px;">🔐 Entrar no OntoCube</strong>
+        <button class="btn btn-sm" id="btnCloseAuth">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="panel-tabs auth-tabs">
+          <button class="tab-btn active" data-auth-tab="login">Entrar</button>
+          <button class="tab-btn" data-auth-tab="register">Criar conta (Stakeholder)</button>
+        </div>
+        <form id="loginForm" class="form-grid">
+          <label class="label-sm" for="loginUser">Usuário</label>
+          <input class="input" id="loginUser" autocomplete="username" required />
+          <label class="label-sm" for="loginPass">Senha</label>
+          <input class="input" id="loginPass" type="password" autocomplete="current-password" required />
+          <button class="btn btn-primary" type="submit">Entrar</button>
+        </form>
+        <form id="registerForm" class="form-grid" hidden>
+          <label class="label-sm" for="regName">Nome</label>
+          <input class="input" id="regName" autocomplete="name" />
+          <label class="label-sm" for="regUser">Usuário (letras minúsculas, números, . _ -)</label>
+          <input class="input" id="regUser" autocomplete="username" required />
+          <label class="label-sm" for="regPass">Senha (mínimo 8 caracteres)</label>
+          <input class="input" id="regPass" type="password" autocomplete="new-password" required />
+          <button class="btn btn-primary" type="submit">Criar conta</button>
+          <p class="gov-hint">Contas criadas aqui têm o papel <strong>Stakeholder</strong> (consultar, solicitar e comentar).
+            Os papéis de Engenheiro de Conhecimento e Especialista de Domínio são atribuídos pela administração.</p>
+        </form>
+        <div class="gov-error" id="authError" hidden></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL DE GOVERNANÇA ==================== -->
+  <div class="modal-backdrop" id="govModal">
+    <div class="modal-box gov-box">
+      <div class="modal-header">
+        <div>
+          <strong style="font-size:14px;">🏛️ Governança de Ontologias</strong>
+          <div class="gov-sub" id="govSubtitle"></div>
+        </div>
+        <div class="gov-head-actions">
+          <button class="btn btn-sm" id="btnGovLogout" hidden>↩ Sair</button>
+          <button class="btn btn-sm" id="btnCloseGov">✕ Fechar</button>
+        </div>
+      </div>
+      <nav class="gov-tabs" id="govTabs">
+        <button data-gov-tab="ontologias">📚 Ontologias</button>
+        <button data-gov-tab="solicitacoes">📝 Solicitações</button>
+        <button data-gov-tab="validacao">✅ Validação</button>
+        <button data-gov-tab="historico">🕒 Version Log / CDL</button>
+        <button data-gov-tab="agente">🤖 Agente LLM</button>
+        <button data-gov-tab="procedimentos">📘 Procedimentos</button>
+        <button data-gov-tab="papeis">👥 Papéis e acesso</button>
+      </nav>
+      <div class="modal-body gov-body" id="govBody"></div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL DE JUSTIFICATIVA / CONFIRMAÇÃO ==================== -->
+  <div class="modal-backdrop" id="govPromptModal">
+    <div class="modal-box prompt-box">
+      <div class="modal-header"><strong id="govPromptTitle"></strong></div>
+      <div class="modal-body">
+        <p class="gov-hint" id="govPromptText"></p>
+        <textarea class="textarea" id="govPromptInput" rows="4"></textarea>
+      </div>
+      <div class="modal-footer">
+        <span></span>
+        <div style="display:flex; gap:8px;">
+          <button class="btn" id="govPromptCancel">Cancelar</button>
+          <button class="btn btn-primary" id="govPromptOk">Confirmar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="toast-container" id="toastContainer"></div>
 
   <script src="{{ url_for('static', filename='index.js') }}"></script>
+  <script src="{{ url_for('static', filename='governance.js') }}"></script>
 </body>
 </html>

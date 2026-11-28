@@ -107,6 +107,61 @@ function sanitizeId(raw) {
     return clean || "Entidade_" + Math.floor(Math.random() * 10000);
 }
 
+const OWL_NS = "http://www.w3.org/2002/07/owl#";
+const RDFS_NS = "http://www.w3.org/2000/01/rdf-schema#";
+const XSD_NS = "http://www.w3.org/2001/XMLSchema#";
+
+// IRI padrão para entidades criadas na própria ferramenta (sem IRI de origem)
+function defaultIri(id) {
+    const base = ontology.iri || "http://example.org/ontocube#";
+    return /[#/]$/.test(base) ? base + id : base + "#" + id;
+}
+
+// Resolve um rdf:about / rdf:resource (absoluto, "#frag" ou relativo) contra o xml:base
+function resolveIri(raw, base) {
+    const s = String(raw || "").trim();
+    if (!s) return "";
+    if (/^[a-z][a-z0-9+.-]*:/i.test(s)) return s;
+    const b = String(base || ontology.iri || "");
+    if (s.startsWith("#")) return b.replace(/#.*$/, "") + s;
+    try {
+        return new URL(s, b).href;
+    } catch (_) {
+        return defaultIri(s);
+    }
+}
+
+const DCTERMS_NS = "http://purl.org/dc/terms/";
+const DC_NS = "http://purl.org/dc/elements/1.1/";
+
+// Criador padrão dos elementos novos (metadado FAIR dcterms:creator)
+function defaultCreator() {
+    const u = window.OntoGov && window.OntoGov.auth && window.OntoGov.auth.user;
+    return u ? u.display_name : "Visitante";
+}
+
+// Metadados FAIR obrigatórios por elemento (PocGov seção 5)
+const FAIR_FIELDS = [
+    ["label", "rdfs:label"],
+    ["comment", "rdfs:comment"],
+    ["source", "dcterms:source"],
+    ["creator", "dcterms:creator"]
+];
+function fairMissing(entity) {
+    return FAIR_FIELDS.filter(([key]) => !String((entity && entity[key]) || "").trim()).map(([, name]) => name);
+}
+
+// Lê rdfs:comment, dcterms:source e dcterms:creator (ou dc:) de um elemento filho
+function readFairChild(entity, cTag, ch) {
+    const ns = ch.namespaceURI || "";
+    const isComment = cTag === "comment" && ns === RDFS_NS;
+    const isDc = (cTag === "source" || cTag === "creator") && (ns === DCTERMS_NS || ns === DC_NS);
+    if (!isComment && !isDc) return false;
+    const value = getAttrLocal(ch, "resource") || ch.textContent.trim();
+    if (value) entity[cTag] = value;
+    return true;
+}
+
 function pickColor(idx) {
     return PALETTE[Math.abs(idx) % PALETTE.length];
 }
@@ -158,8 +213,11 @@ function serializeSnapshot() {
         if (id === "owl:Thing") continue;
         classes[id] = {
             id: c.id,
+            iri: c.iri || "",
             label: c.label,
             comment: c.comment || "",
+            source: c.source || "",
+            creator: c.creator || "",
             parents: Array.from(c.parents).filter((p) => p !== "owl:Thing").sort(),
             disjointWith: Array.from(c.disjointWith).sort(),
             color: c.color
@@ -169,7 +227,11 @@ function serializeSnapshot() {
     for (const [id, p] of ontology.objProps.entries()) {
         objProps[id] = {
             id: p.id,
+            iri: p.iri || "",
             label: p.label,
+            comment: p.comment || "",
+            source: p.source || "",
+            creator: p.creator || "",
             domain: p.domain || "",
             range: p.range || "",
             inverseOf: p.inverseOf || "",
@@ -184,7 +246,11 @@ function serializeSnapshot() {
     for (const [id, d] of ontology.dataProps.entries()) {
         dataProps[id] = {
             id: d.id,
+            iri: d.iri || "",
             label: d.label,
+            comment: d.comment || "",
+            source: d.source || "",
+            creator: d.creator || "",
             domain: d.domain || "",
             range: d.range || "xsd:string",
             functional: !!d.functional
@@ -194,15 +260,21 @@ function serializeSnapshot() {
     for (const [id, ind] of ontology.individuals.entries()) {
         individuals[id] = {
             id: ind.id,
+            iri: ind.iri || "",
             label: ind.label,
+            comment: ind.comment || "",
+            source: ind.source || "",
+            creator: ind.creator || "",
             types: Array.from(ind.types).filter((t) => t !== "owl:Thing").sort(),
             dataValues: ind.dataValues.map((dv) => ({
                 prop: dv.prop,
+                ns: dv.ns || "",
                 value: String(dv.value),
                 datatype: dv.datatype || "xsd:string"
             })),
             objLinks: ind.objLinks.map((lk) => ({
                 prop: lk.prop,
+                ns: lk.ns || "",
                 target: lk.target
             }))
         };
@@ -225,8 +297,11 @@ function restoreSnapshot(snap) {
         if (parents.size === 0) parents.add("owl:Thing");
         ontology.classes.set(id, {
             id,
+            iri: c.iri || "",
             label: c.label || id,
             comment: c.comment || "",
+            source: c.source || "",
+            creator: c.creator || "",
             parents,
             disjointWith: new Set(c.disjointWith || []),
             color: c.color || pickColor(idx++),
@@ -251,7 +326,11 @@ function restoreSnapshot(snap) {
     for (const [id, ind] of Object.entries(snap.individuals || {})) {
         ontology.individuals.set(id, {
             id,
+            iri: ind.iri || "",
             label: ind.label || id,
+            comment: ind.comment || "",
+            source: ind.source || "",
+            creator: ind.creator || "",
             types: new Set(ind.types || []),
             dataValues: (ind.dataValues || []).map((dv) => ({ ...dv })),
             objLinks: (ind.objLinks || []).map((lk) => ({ ...lk })),
@@ -288,6 +367,10 @@ function createVersionSnapshot(actionLabel, resetHistory = false) {
     recomputeDiff();
 }
 
+function fairChanged(a, b) {
+    return ["label", "comment", "source", "creator"].some((k) => (a[k] || "") !== (b[k] || ""));
+}
+
 function computeSnapshotDiff(baseSnap, targetSnap) {
     const diff = {
         classes: new Map(),      // id -> { status: 'added'|'modified'|'removed', changes: [], oldData }
@@ -316,6 +399,9 @@ function computeSnapshotDiff(baseSnap, targetSnap) {
             const changes = [];
             if (a.label !== b.label) changes.push(`Rótulo: "${a.label}" → "${b.label}"`);
             if ((a.comment || "") !== (b.comment || "")) changes.push("Descrição alterada");
+            if ((a.source || "") !== (b.source || "") || (a.creator || "") !== (b.creator || "")) {
+                changes.push("Metadados FAIR alterados");
+            }
             if (JSON.stringify(a.parents) !== JSON.stringify(b.parents)) {
                 changes.push(`Superclasses: [${a.parents.join(", ")}] → [${b.parents.join(", ")}]`);
             }
@@ -347,6 +433,7 @@ function computeSnapshotDiff(baseSnap, targetSnap) {
             const changes = [];
             if (a.domain !== b.domain) changes.push(`Domínio: ${a.domain || "—"} → ${b.domain || "—"}`);
             if (a.range !== b.range) changes.push(`Imagem: ${a.range || "—"} → ${b.range || "—"}`);
+            if (fairChanged(a, b)) changes.push("Rótulo/metadados FAIR alterados");
             if (
                 a.functional !== b.functional ||
                 a.symmetric !== b.symmetric ||
@@ -381,6 +468,7 @@ function computeSnapshotDiff(baseSnap, targetSnap) {
             const changes = [];
             if (a.domain !== b.domain) changes.push(`Domínio: ${a.domain || "—"} → ${b.domain || "—"}`);
             if (a.range !== b.range) changes.push(`Tipo XSD: ${a.range} → ${b.range}`);
+            if (fairChanged(a, b)) changes.push("Rótulo/metadados FAIR alterados");
             if (a.functional !== b.functional) changes.push("Funcionalidade alterada");
             if (changes.length > 0) {
                 diff.dataProps.set(id, { status: "modified", changes, oldData: a });
@@ -414,6 +502,7 @@ function computeSnapshotDiff(baseSnap, targetSnap) {
             if (JSON.stringify(a.objLinks) !== JSON.stringify(b.objLinks)) {
                 changes.push("Relações de objeto alteradas");
             }
+            if (fairChanged(a, b)) changes.push("Rótulo/metadados FAIR alterados");
             if (changes.length > 0) {
                 diff.individuals.set(id, { status: "modified", changes, oldData: a });
                 diff.counts.modified++;
@@ -489,20 +578,50 @@ function parseOWLRDF(xmlText, sourceLabel = "Arquivo OWL/RDF") {
     ensureOwlThing();
 
     const root = doc.documentElement;
-    const baseAttr = root.getAttribute("xml:base") || root.getAttribute("xmlns") || "http://example.org/ontocube#";
+    // IRI da ontologia: owl:Ontology rdf:about tem prioridade sobre xml:base/xmlns
+    // Aceita <owl:Ontology rdf:about> e <rdf:Description rdf:about><rdf:type rdf:resource="...owl#Ontology"/>
+    const isOntologyEl = (el) => {
+        const tag = el.localName || el.nodeName.split(":").pop();
+        if (tag === "Ontology") return true;
+        if (tag !== "Description") return false;
+        return Array.from(el.children).some(
+            (ch) => (ch.localName || ch.nodeName.split(":").pop()) === "type" && getAttrLocal(ch, "resource") === OWL_NS + "Ontology"
+        );
+    };
+    const ontoEl = Array.from(root.children).find((el) => isOntologyEl(el) && getAttrLocal(el, "about"));
+    const baseAttr =
+        (ontoEl && getAttrLocal(ontoEl, "about")) ||
+        root.getAttribute("xml:base") ||
+        root.getAttribute("xmlns") ||
+        "http://example.org/ontocube#";
     ontology.iri = baseAttr.endsWith("#") || baseAttr.endsWith("/") ? baseAttr : baseAttr + "#";
+    const docBase = root.getAttribute("xml:base") || baseAttr;
 
     const annotationPropIds = new Set();
     let colorCounter = 0;
 
+    // Os IDs internos são localNames; registramos quando dois IRIs distintos caem no mesmo ID
+    const collisions = new Set();
+    function noteIri(entity, iri) {
+        if (!iri) return;
+        if (!entity.iri) entity.iri = iri;
+        else if (entity.iri !== iri) collisions.add(`${entity.id} (${entity.iri} × ${iri})`);
+    }
+
     function ensureClass(rawUri) {
         const id = localName(rawUri);
         if (!id || id === "Thing" || id === "owl:Thing") return "owl:Thing";
-        if (!ontology.classes.has(id)) {
+        const iri = resolveIri(rawUri, docBase);
+        if (ontology.classes.has(id)) {
+            noteIri(ontology.classes.get(id), iri);
+        } else {
             ontology.classes.set(id, {
                 id,
+                iri,
                 label: id,
                 comment: "",
+                source: "",
+                creator: "",
                 parents: new Set(),
                 disjointWith: new Set(),
                 color: pickColor(colorCounter++),
@@ -559,21 +678,31 @@ function parseOWLRDF(xmlText, sourceLabel = "Arquivo OWL/RDF") {
             continue;
         }
 
-        const about = getAttrLocal(el, "about") || getAttrLocal(el, "ID");
+        const aboutAttr = getAttrLocal(el, "about");
+        const idAttr = getAttrLocal(el, "ID");
+        const about = aboutAttr || idAttr;
         const entityId = localName(about);
         if (!entityId || annotationPropIds.has(entityId)) continue;
+        // rdf:ID="X" equivale a rdf:about="#X"
+        const entityIri = resolveIri(aboutAttr || "#" + idAttr, docBase);
 
         let inferredKind = tag;
-        const typesFound = [];
+        const typesFound = [];   // localNames (para classificar o elemento)
+        const typesRaw = [];     // IRIs originais (para criar as classes com o IRI correto)
         for (const ch of Array.from(el.children)) {
             const cTag = ch.localName || ch.nodeName.split(":").pop();
             if (cTag === "type") {
-                const res = localName(getAttrLocal(ch, "resource"));
-                if (res) typesFound.push(res);
+                const rawRes = getAttrLocal(ch, "resource");
+                const res = localName(rawRes);
+                if (res) {
+                    typesFound.push(res);
+                    typesRaw.push(rawRes);
+                }
             }
         }
 
         if (tag === "Description") {
+            if (typesFound.includes("Ontology")) continue; // cabeçalho da ontologia, não é indivíduo
             if (typesFound.includes("Class")) inferredKind = "Class";
             else if (typesFound.includes("ObjectProperty")) inferredKind = "ObjectProperty";
             else if (typesFound.includes("DatatypeProperty")) inferredKind = "DatatypeProperty";
@@ -583,7 +712,7 @@ function parseOWLRDF(xmlText, sourceLabel = "Arquivo OWL/RDF") {
         }
 
         if (inferredKind === "Class") {
-            const cid = ensureClass(entityId);
+            const cid = ensureClass(entityIri);
             if (cid === "owl:Thing") continue;
             const cls = ontology.classes.get(cid);
 
@@ -592,8 +721,8 @@ function parseOWLRDF(xmlText, sourceLabel = "Arquivo OWL/RDF") {
                 const res = getAttrLocal(ch, "resource");
                 if (cTag === "label" && ch.textContent.trim()) {
                     cls.label = ch.textContent.trim();
-                } else if (cTag === "comment" && ch.textContent.trim()) {
-                    cls.comment = ch.textContent.trim();
+                } else if (readFairChild(cls, cTag, ch)) {
+                    // rdfs:comment, dcterms:source, dcterms:creator
                 } else if (cTag === "subClassOf" && res) {
                     const pid = ensureClass(res);
                     if (pid && pid !== cid) cls.parents.add(pid);
@@ -606,9 +735,14 @@ function parseOWLRDF(xmlText, sourceLabel = "Arquivo OWL/RDF") {
                 }
             }
         } else if (inferredKind === "ObjectProperty") {
+            if (ontology.objProps.has(entityId)) noteIri(ontology.objProps.get(entityId), entityIri);
             const op = {
                 id: entityId,
+                iri: entityIri,
                 label: entityId,
+                comment: "",
+                source: "",
+                creator: "",
                 domain: "",
                 range: "",
                 inverseOf: "",
@@ -622,15 +756,21 @@ function parseOWLRDF(xmlText, sourceLabel = "Arquivo OWL/RDF") {
                 const cTag = ch.localName || ch.nodeName.split(":").pop();
                 const res = getAttrLocal(ch, "resource");
                 if (cTag === "label" && ch.textContent.trim()) op.label = ch.textContent.trim();
+                else if (readFairChild(op, cTag, ch)) continue;
                 else if (cTag === "domain" && res) op.domain = ensureClass(res);
                 else if (cTag === "range" && res) op.range = ensureClass(res);
                 else if (cTag === "inverseOf" && res) op.inverseOf = localName(res);
             }
             ontology.objProps.set(entityId, op);
         } else if (inferredKind === "DatatypeProperty") {
+            if (ontology.dataProps.has(entityId)) noteIri(ontology.dataProps.get(entityId), entityIri);
             const dp = {
                 id: entityId,
+                iri: entityIri,
                 label: entityId,
+                comment: "",
+                source: "",
+                creator: "",
                 domain: "",
                 range: "xsd:string",
                 functional: typesFound.includes("FunctionalProperty")
@@ -639,27 +779,35 @@ function parseOWLRDF(xmlText, sourceLabel = "Arquivo OWL/RDF") {
                 const cTag = ch.localName || ch.nodeName.split(":").pop();
                 const res = getAttrLocal(ch, "resource");
                 if (cTag === "label" && ch.textContent.trim()) dp.label = ch.textContent.trim();
+                else if (readFairChild(dp, cTag, ch)) continue;
                 else if (cTag === "domain" && res) dp.domain = ensureClass(res);
                 else if (cTag === "range" && res) {
+                    const rangeIri = resolveIri(res, docBase);
                     const dt = localName(res);
-                    dp.range = dt.startsWith("xsd:") ? dt : "xsd:" + dt;
+                    if (rangeIri.startsWith(RDFS_NS)) dp.range = "rdfs:" + dt; // ex.: rdfs:Literal
+                    else dp.range = dt.startsWith("xsd:") ? dt : "xsd:" + dt;
                 }
             }
             ontology.dataProps.set(entityId, dp);
         } else {
             // Indivíduo (A-BOX)
-            const filteredTypes = typesFound
-                .filter((t) => !["NamedIndividual", "Thing", "owl:Thing", "Resource", "Ontology"].includes(t))
-                .map((t) => ensureClass(t));
+            const filteredTypes = typesRaw
+                .filter((_, i) => !["NamedIndividual", "Thing", "owl:Thing", "Resource", "Ontology"].includes(typesFound[i]))
+                .map((rawType) => ensureClass(rawType));
 
             if (filteredTypes.length === 0 && inferredKind === "NamedIndividual") {
                 filteredTypes.push("owl:Thing");
             }
             if (filteredTypes.length === 0) continue;
 
+            if (ontology.individuals.has(entityId)) noteIri(ontology.individuals.get(entityId), entityIri);
             const ind = {
                 id: entityId,
+                iri: entityIri,
                 label: entityId,
+                comment: "",
+                source: "",
+                creator: "",
                 types: new Set(filteredTypes),
                 dataValues: [],
                 objLinks: [],
@@ -676,15 +824,17 @@ function parseOWLRDF(xmlText, sourceLabel = "Arquivo OWL/RDF") {
                     ind.label = ch.textContent.trim();
                     continue;
                 }
+                if (readFairChild(ind, cTag, ch)) continue;
                 if (ANNOTATION_PREDICATES.has(cTag) || annotationPropIds.has(cTag)) continue;
 
                 const res = getAttrLocal(ch, "resource");
+                const ns = ch.namespaceURI || ""; // namespace da propriedade, preservado no export
                 if (res) {
-                    ind.objLinks.push({ prop: cTag, target: localName(res) });
+                    ind.objLinks.push({ prop: cTag, ns, target: localName(res) });
                 } else if (ch.textContent !== undefined) {
                     const dtAttr = getAttrLocal(ch, "datatype");
                     const dt = dtAttr ? (localName(dtAttr).startsWith("xsd:") ? localName(dtAttr) : "xsd:" + localName(dtAttr)) : "xsd:string";
-                    ind.dataValues.push({ prop: cTag, value: ch.textContent.trim(), datatype: dt });
+                    ind.dataValues.push({ prop: cTag, ns, value: ch.textContent.trim(), datatype: dt });
                 }
             }
             ontology.individuals.set(entityId, ind);
@@ -707,37 +857,70 @@ function parseOWLRDF(xmlText, sourceLabel = "Arquivo OWL/RDF") {
     createVersionSnapshot(`Carregado: ${sourceLabel}`, isFirstLoad);
     refreshAllUI();
     showToast(`Ontologia carregada (${ontology.classes.size - 1} classes, ${ontology.objProps.size} relações). Selecione uma classe na árvore.`);
+    if (collisions.size > 0) {
+        console.warn("IRIs distintos com o mesmo nome local (mesclados em um único ID):", Array.from(collisions));
+        showToast(`Atenção: ${collisions.size} nome(s) local(is) repetido(s) em namespaces diferentes foram mesclados. Veja o console.`);
+    }
 }
 
 function serializeToOWLRDF() {
+    // IRI completo de cada entidade: o original do arquivo ou um IRI sob a ontologia atual
+    const classIri = (id) => (id === "owl:Thing" ? OWL_NS + "Thing" : ontology.classes.get(id)?.iri || defaultIri(id));
+    const objPropIri = (id) => ontology.objProps.get(id)?.iri || defaultIri(id);
+    const indIri = (id) => ontology.individuals.get(id)?.iri || defaultIri(id);
+    const attr = (v) => escapeHtml(v);
+    const rangeIri = (range) => {
+        if (range.startsWith("rdfs:")) return RDFS_NS + range.slice(5);
+        return XSD_NS + range.replace(/^xsd:/, "");
+    };
+    // Namespace do elemento de uma asserção (dataValue/objLink) no A-BOX
+    const propNs = (entry, map) => {
+        if (entry.ns) return entry.ns;
+        const iri = map.get(entry.prop)?.iri;
+        if (iri) return iri.slice(0, iri.length - entry.prop.length);
+        return "";
+    };
+    const nsAttr = (ns) => (ns && ns !== ontology.iri ? ` xmlns="${attr(ns)}"` : "");
+    // Metadados FAIR: rdfs:comment, dcterms:source, dcterms:creator
+    const fairLines = (e, withComment = true) => {
+        const out = [];
+        if (withComment && e.comment) out.push(`    <rdfs:comment>${escapeHtml(e.comment)}</rdfs:comment>`);
+        for (const key of ["source", "creator"]) {
+            const v = String(e[key] || "").trim();
+            if (!v) continue;
+            if (/^https?:\/\/\S+$/.test(v)) out.push(`    <dcterms:${key} rdf:resource="${attr(v)}"/>`);
+            else out.push(`    <dcterms:${key}>${escapeHtml(v)}</dcterms:${key}>`);
+        }
+        return out;
+    };
+
     const lines = [];
     lines.push(`<?xml version="1.0" encoding="UTF-8"?>`);
-    lines.push(`<rdf:RDF xmlns="${escapeHtml(ontology.iri)}"`);
-    lines.push(`     xml:base="${escapeHtml(ontology.iri.replace(/#$/, ""))}"`);
-    lines.push(`     xmlns:owl="http://www.w3.org/2002/07/owl#"`);
+    lines.push(`<rdf:RDF xmlns="${attr(ontology.iri)}"`);
+    lines.push(`     xml:base="${attr(ontology.iri.replace(/#$/, ""))}"`);
+    lines.push(`     xmlns:owl="${OWL_NS}"`);
     lines.push(`     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"`);
-    lines.push(`     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"`);
-    lines.push(`     xmlns:xsd="http://www.w3.org/2001/XMLSchema#">`);
-    lines.push(`  <owl:Ontology rdf:about="${escapeHtml(ontology.iri.replace(/#$/, ""))}"/>`);
+    lines.push(`     xmlns:rdfs="${RDFS_NS}"`);
+    lines.push(`     xmlns:dcterms="${DCTERMS_NS}"`);
+    lines.push(`     xmlns:xsd="${XSD_NS}">`);
+    lines.push(`  <owl:Ontology rdf:about="${attr(ontology.iri.replace(/#$/, ""))}"/>`);
     lines.push("");
 
     for (const [id, cls] of ontology.classes.entries()) {
         if (id === "owl:Thing") continue;
-        lines.push(`  <owl:Class rdf:about="#${escapeHtml(id)}">`);
-        if (cls.label && cls.label !== id) {
+        lines.push(`  <owl:Class rdf:about="${attr(classIri(id))}">`);
+        if (cls.label) {
             lines.push(`    <rdfs:label>${escapeHtml(cls.label)}</rdfs:label>`);
         }
-        if (cls.comment) {
-            lines.push(`    <rdfs:comment>${escapeHtml(cls.comment)}</rdfs:comment>`);
-        }
+        lines.push(...fairLines(cls));
         for (const p of cls.parents) {
             if (p && p !== "owl:Thing") {
-                lines.push(`    <rdfs:subClassOf rdf:resource="#${escapeHtml(p)}"/>`);
+                lines.push(`    <rdfs:subClassOf rdf:resource="${attr(classIri(p))}"/>`);
             }
         }
         for (const d of cls.disjointWith) {
             if (d && d !== "owl:Thing") {
-                lines.push(`    <owl:disjointWith rdf:resource="#${escapeHtml(d)}"/>`);
+                lines.push(`    <owl:disjointWith rdf:resource="${attr(classIri(d))}"/>`);
             }
         }
         lines.push(`  </owl:Class>`);
@@ -745,47 +928,47 @@ function serializeToOWLRDF() {
 
     lines.push("");
     for (const [id, op] of ontology.objProps.entries()) {
-        lines.push(`  <owl:ObjectProperty rdf:about="#${escapeHtml(id)}">`);
-        if (op.label && op.label !== id) lines.push(`    <rdfs:label>${escapeHtml(op.label)}</rdfs:label>`);
-        if (op.functional) lines.push(`    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>`);
-        if (op.symmetric) lines.push(`    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#SymmetricProperty"/>`);
-        if (op.transitive) lines.push(`    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#TransitiveProperty"/>`);
-        if (op.irreflexive) lines.push(`    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#IrreflexiveProperty"/>`);
-        if (op.asymmetric) lines.push(`    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AsymmetricProperty"/>`);
-        if (op.domain && op.domain !== "owl:Thing") lines.push(`    <rdfs:domain rdf:resource="#${escapeHtml(op.domain)}"/>`);
-        if (op.range && op.range !== "owl:Thing") lines.push(`    <rdfs:range rdf:resource="#${escapeHtml(op.range)}"/>`);
-        if (op.inverseOf) lines.push(`    <owl:inverseOf rdf:resource="#${escapeHtml(op.inverseOf)}"/>`);
+        lines.push(`  <owl:ObjectProperty rdf:about="${attr(objPropIri(id))}">`);
+        if (op.label) lines.push(`    <rdfs:label>${escapeHtml(op.label)}</rdfs:label>`);
+        lines.push(...fairLines(op));
+        if (op.functional) lines.push(`    <rdf:type rdf:resource="${OWL_NS}FunctionalProperty"/>`);
+        if (op.symmetric) lines.push(`    <rdf:type rdf:resource="${OWL_NS}SymmetricProperty"/>`);
+        if (op.transitive) lines.push(`    <rdf:type rdf:resource="${OWL_NS}TransitiveProperty"/>`);
+        if (op.irreflexive) lines.push(`    <rdf:type rdf:resource="${OWL_NS}IrreflexiveProperty"/>`);
+        if (op.asymmetric) lines.push(`    <rdf:type rdf:resource="${OWL_NS}AsymmetricProperty"/>`);
+        if (op.domain && op.domain !== "owl:Thing") lines.push(`    <rdfs:domain rdf:resource="${attr(classIri(op.domain))}"/>`);
+        if (op.range && op.range !== "owl:Thing") lines.push(`    <rdfs:range rdf:resource="${attr(classIri(op.range))}"/>`);
+        if (op.inverseOf) lines.push(`    <owl:inverseOf rdf:resource="${attr(objPropIri(op.inverseOf))}"/>`);
         lines.push(`  </owl:ObjectProperty>`);
     }
 
     lines.push("");
     for (const [id, dp] of ontology.dataProps.entries()) {
-        lines.push(`  <owl:DatatypeProperty rdf:about="#${escapeHtml(id)}">`);
-        if (dp.label && dp.label !== id) lines.push(`    <rdfs:label>${escapeHtml(dp.label)}</rdfs:label>`);
-        if (dp.functional) lines.push(`    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>`);
-        if (dp.domain && dp.domain !== "owl:Thing") lines.push(`    <rdfs:domain rdf:resource="#${escapeHtml(dp.domain)}"/>`);
-        if (dp.range) {
-            const xsdName = dp.range.replace(/^xsd:/, "");
-            lines.push(`    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#${escapeHtml(xsdName)}"/>`);
-        }
+        lines.push(`  <owl:DatatypeProperty rdf:about="${attr(dp.iri || defaultIri(id))}">`);
+        if (dp.label) lines.push(`    <rdfs:label>${escapeHtml(dp.label)}</rdfs:label>`);
+        lines.push(...fairLines(dp));
+        if (dp.functional) lines.push(`    <rdf:type rdf:resource="${OWL_NS}FunctionalProperty"/>`);
+        if (dp.domain && dp.domain !== "owl:Thing") lines.push(`    <rdfs:domain rdf:resource="${attr(classIri(dp.domain))}"/>`);
+        if (dp.range) lines.push(`    <rdfs:range rdf:resource="${attr(rangeIri(dp.range))}"/>`);
         lines.push(`  </owl:DatatypeProperty>`);
     }
 
     lines.push("");
     for (const [id, ind] of ontology.individuals.entries()) {
-        lines.push(`  <owl:NamedIndividual rdf:about="#${escapeHtml(id)}">`);
-        if (ind.label && ind.label !== id) lines.push(`    <rdfs:label>${escapeHtml(ind.label)}</rdfs:label>`);
+        lines.push(`  <owl:NamedIndividual rdf:about="${attr(indIri(id))}">`);
+        if (ind.label) lines.push(`    <rdfs:label>${escapeHtml(ind.label)}</rdfs:label>`);
+        lines.push(...fairLines(ind));
         for (const t of ind.types) {
             if (t && t !== "owl:Thing") {
-                lines.push(`    <rdf:type rdf:resource="#${escapeHtml(t)}"/>`);
+                lines.push(`    <rdf:type rdf:resource="${attr(classIri(t))}"/>`);
             }
         }
         for (const dv of ind.dataValues) {
-            const xsdName = (dv.datatype || "xsd:string").replace(/^xsd:/, "");
-            lines.push(`    <${escapeHtml(dv.prop)} rdf:datatype="http://www.w3.org/2001/XMLSchema#${escapeHtml(xsdName)}">${escapeHtml(dv.value)}</${escapeHtml(dv.prop)}>`);
+            const tag = escapeHtml(dv.prop);
+            lines.push(`    <${tag}${nsAttr(propNs(dv, ontology.dataProps))} rdf:datatype="${attr(rangeIri(dv.datatype || "xsd:string"))}">${escapeHtml(dv.value)}</${tag}>`);
         }
         for (const lk of ind.objLinks) {
-            lines.push(`    <${escapeHtml(lk.prop)} rdf:resource="#${escapeHtml(lk.target)}"/>`);
+            lines.push(`    <${escapeHtml(lk.prop)}${nsAttr(propNs(lk, ontology.objProps))} rdf:resource="${attr(indIri(lk.target))}"/>`);
         }
         lines.push(`  </owl:NamedIndividual>`);
     }
@@ -2801,6 +2984,30 @@ function renderVersionPanel() {
     appendDiffGroup(diff.individuals, "individual", "Objeto");
 }
 
+// Campos FAIR do inspetor (rdfs:comment, dcterms:source, dcterms:creator) + indicador x/4
+function fairInspectorHtml(entity, prefix, includeComment) {
+    const missing = fairMissing(entity);
+    const done = FAIR_FIELDS.length - missing.length;
+    return `
+              ${includeComment
+                  ? `<label class="label-sm">Descrição (rdfs:comment)</label>
+              <input type="text" class="input" id="edit${prefix}Comment" value="${escapeHtml(entity.comment || "")}" />`
+                  : ""}
+              <label class="label-sm">Fonte (dcterms:source)</label>
+              <input type="text" class="input" id="edit${prefix}Source" placeholder="Documento, norma ou URL" value="${escapeHtml(entity.source || "")}" />
+              <label class="label-sm">Criador / origem (dcterms:creator)</label>
+              <input type="text" class="input" id="edit${prefix}Creator" value="${escapeHtml(entity.creator || "")}" />
+              <div class="fair-indicator ${missing.length ? "fair-missing" : "fair-ok"}" title="Metadados FAIR obrigatórios (PocGov seção 5)">
+                FAIR ${done}/${FAIR_FIELDS.length}${missing.length ? ` — falta: ${escapeHtml(missing.join(", "))}` : " ✓"}
+              </div>`;
+}
+
+function readFairInputs(entity, prefix, includeComment) {
+    if (includeComment) entity.comment = document.getElementById(`edit${prefix}Comment`).value.trim();
+    entity.source = document.getElementById(`edit${prefix}Source`).value.trim();
+    entity.creator = document.getElementById(`edit${prefix}Creator`).value.trim();
+}
+
 function renderInspector() {
     const container = document.getElementById("inspectorContent");
     if (!container) return;
@@ -2909,6 +3116,7 @@ function renderInspector() {
               <input type="text" class="input" id="editClassLabel" value="${escapeHtml(cls.label)}" />
               <label class="label-sm">Descrição (rdfs:comment)</label>
               <input type="text" class="input" id="editClassComment" value="${escapeHtml(cls.comment || "")}" />
+              ${fairInspectorHtml(cls, "Class", false)}
               <div class="form-row">
                 <button class="btn btn-primary btn-sm" id="btnSaveClassMeta" style="flex:1;">💾 Salvar Alterações</button>
                 ${id !== "owl:Thing" ? `<button class="btn btn-rose btn-sm" id="btnDeleteClass">🗑 Excluir</button>` : ""}
@@ -3006,6 +3214,7 @@ function renderInspector() {
         document.getElementById("btnSaveClassMeta").onclick = () => {
             cls.label = document.getElementById("editClassLabel").value.trim() || cls.id;
             cls.comment = document.getElementById("editClassComment").value.trim();
+            readFairInputs(cls, "Class", false);
             createVersionSnapshot(`Editada classe: ${cls.label}`);
             refreshAllUI();
             if (uiState.stageActive) render3DScene();
@@ -3077,6 +3286,7 @@ function renderInspector() {
             <div class="form-grid">
               <label class="label-sm">Rótulo</label>
               <input type="text" class="input" id="editOpLabel" value="${escapeHtml(op.label)}" />
+              ${fairInspectorHtml(op, "Op", true)}
               <label class="label-sm">Domínio (rdfs:domain)</label>
               <select class="select" id="editOpDomain">
                 <option value="">(Qualquer / owl:Thing)</option>
@@ -3104,6 +3314,7 @@ function renderInspector() {
 
         document.getElementById("btnSaveOp").onclick = () => {
             op.label = document.getElementById("editOpLabel").value.trim() || op.id;
+            readFairInputs(op, "Op", true);
             op.domain = document.getElementById("editOpDomain").value;
             op.range = document.getElementById("editOpRange").value;
             op.functional = document.getElementById("editOpFunc").checked;
@@ -3134,6 +3345,7 @@ function renderInspector() {
             <div class="form-grid">
               <label class="label-sm">Rótulo</label>
               <input type="text" class="input" id="editDpLabel" value="${escapeHtml(dp.label)}" />
+              ${fairInspectorHtml(dp, "Dp", true)}
               <label class="label-sm">Domínio (Classe)</label>
               <select class="select" id="editDpDomain">
                 <option value="">(Qualquer / owl:Thing)</option>
@@ -3158,6 +3370,7 @@ function renderInspector() {
 
         document.getElementById("btnSaveDp").onclick = () => {
             dp.label = document.getElementById("editDpLabel").value.trim() || dp.id;
+            readFairInputs(dp, "Dp", true);
             dp.domain = document.getElementById("editDpDomain").value;
             dp.range = document.getElementById("editDpRange").value;
             dp.functional = document.getElementById("editDpFunc").checked;
@@ -3188,6 +3401,7 @@ function renderInspector() {
             <div class="form-grid">
               <label class="label-sm">Identificador / Rótulo</label>
               <input type="text" class="input" id="editIndLabel" value="${escapeHtml(ind.label)}" />
+              ${fairInspectorHtml(ind, "Ind", true)}
               <div class="form-row">
                 <button class="btn btn-primary btn-sm" id="btnSaveInd" style="flex:1;">💾 Salvar</button>
                 <button class="btn btn-rose btn-sm" id="btnDeleteInd">🗑 Excluir</button>
@@ -3260,6 +3474,7 @@ function renderInspector() {
 
         document.getElementById("btnSaveInd").onclick = () => {
             ind.label = document.getElementById("editIndLabel").value.trim() || ind.id;
+            readFairInputs(ind, "Ind", true);
             createVersionSnapshot(`Editado objeto: ${ind.label}`);
             refreshAllUI();
             if (uiState.stageActive) render3DScene();
@@ -3350,6 +3565,7 @@ function deleteClass(cid) {
     }
     for (const ind of ontology.individuals.values()) {
         ind.types.delete(cid);
+        if (ind.types.size === 0) ind.types.add("owl:Thing");
     }
     if (uiState.selectedId === cid) {
         uiState.selectedId = null;
@@ -3612,6 +3828,8 @@ function applyEvolutionRows() {
                 id,
                 label: raw.trim(),
                 comment: "",
+                source: "",
+                creator: defaultCreator(),
                 parents: new Set(["owl:Thing"]),
                 disjointWith: new Set(),
                 color: pickColor(ontology.classes.size),
@@ -3633,6 +3851,9 @@ function applyEvolutionRows() {
             ontology.individuals.set(id, {
                 id,
                 label: raw.trim(),
+                comment: "",
+                source: "",
+                creator: defaultCreator(),
                 types: new Set(["owl:Thing"]),
                 dataValues: [],
                 objLinks: [],
@@ -3670,6 +3891,9 @@ function applyEvolutionRows() {
                 ontology.objProps.set(propId, {
                     id: propId,
                     label: r.p.trim(),
+                    comment: "",
+                    source: "",
+                    creator: defaultCreator(),
                     domain: domId,
                     range: rngId,
                     inverseOf: "",
@@ -3692,6 +3916,9 @@ function applyEvolutionRows() {
             ontology.dataProps.set(propId, {
                 id: propId,
                 label: r.p.trim(),
+                comment: "",
+                source: "",
+                creator: defaultCreator(),
                 domain: domId,
                 range: dt,
                 functional: false
@@ -3844,29 +4071,14 @@ function bindAllEvents() {
     };
 
     // Carregar arquivo .OWL / .RDF
-    /*const owlInput = document.getElementById("owlFileInput");
-    document.getElementById("btnLoadOwl").onclick = () => owlInput.click();
-    owlInput.onchange = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            try {
-                parseOWLRDF(ev.target.result, file.name);
-            } catch (err) {
-                showToast("Erro ao ler arquivo: " + err.message);
-            }
-        };
-        reader.readAsText(file);
-        owlInput.value = "";
-    };*/
+    document.getElementById("btnLoadOwl").onclick = () => document.getElementById("owlFileInput").click();
     document.getElementById("owlFileInput").addEventListener("change", async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     // 1. Lê o arquivo localmente (renderização imediata no 3D)
     const reader = new FileReader();
-    reader.onload = async (evt) => {
+    reader.onload = (evt) => {
         try {
             parseOWLRDF(evt.target.result, file.name);
         } catch (err) {
@@ -3874,28 +4086,13 @@ function bindAllEvents() {
             return;
         }
 
-        // 2. Envia o arquivo para o servidor Flask salvar (opcional)
-        try {
-            const formData = new FormData();
-            formData.append("file", file);
-
-            const resp = await fetch("/upload-owl", {
-                method: "POST",
-                body: formData
-            });
-
-            if (resp.ok) {
-                const data = await resp.json();
-                showToast("Ontologia salva no servidor: " + data.message);
-            } else {
-                const err = await resp.json();
-                showToast("Aviso: arquivo carregado localmente, mas não salvo no servidor. " + err.error);
-            }
-        } catch (fetchErr) {
-            console.warn("Falha ao enviar arquivo ao servidor:", fetchErr);
-        }
+        // Abrir arquivo é edição local: nada é salvo no servidor por aqui.
+        // Persistência só pelo fluxo de governança (login + proposta).
+        if (window.OntoGov && window.OntoGov.onLocalLoad) window.OntoGov.onLocalLoad(file.name);
     };
     reader.readAsText(file);
+    // Permite selecionar o mesmo arquivo novamente
+    e.target.value = "";
 });
 
     // Carregar arquivo de Evolução
@@ -4090,6 +4287,8 @@ function bindAllEvents() {
             id,
             label: raw,
             comment,
+            source: "",
+            creator: defaultCreator(),
             parents: new Set([parentId]),
             disjointWith: new Set(),
             color: pickColor(ontology.classes.size),
@@ -4118,6 +4317,9 @@ function bindAllEvents() {
         ontology.objProps.set(id, {
             id,
             label: raw,
+            comment: "",
+            source: "",
+            creator: defaultCreator(),
             domain: document.getElementById("newObjPropDomain").value,
             range: document.getElementById("newObjPropRange").value,
             inverseOf: "",
@@ -4141,6 +4343,9 @@ function bindAllEvents() {
         ontology.dataProps.set(id, {
             id,
             label: raw,
+            comment: "",
+            source: "",
+            creator: defaultCreator(),
             domain: document.getElementById("newDataPropDomain").value,
             range: document.getElementById("newDataPropRange").value,
             functional: document.getElementById("newDataPropFunc").checked
@@ -4160,6 +4365,9 @@ function bindAllEvents() {
         ontology.individuals.set(id, {
             id,
             label: raw,
+            comment: "",
+            source: "",
+            creator: defaultCreator(),
             types: new Set([clsId]),
             dataValues: [],
             objLinks: [],
@@ -4211,6 +4419,7 @@ function bindAllEvents() {
     document.getElementById("btnApplyXml").onclick = () => {
         try {
             parseOWLRDF(document.getElementById("owlXmlEditor").value, "Edição XML Manual");
+            if (window.OntoGov && window.OntoGov.onLocalLoad) window.OntoGov.onLocalLoad("Edição XML Manual");
         } catch (err) {
             showToast(err.message);
         }
@@ -4227,7 +4436,45 @@ function bindAllEvents() {
 /* ==========================================================================
    12. INICIALIZAÇÃO
    ========================================================================== */
+// Barra de ferramentas superior: sem barra de rolagem; setas discretas nas bordas quando há botões escondidos
+function setupToolbarScroll() {
+    const group = document.getElementById("toolbarGroup");
+    const left = document.getElementById("toolbarArrowLeft");
+    const right = document.getElementById("toolbarArrowRight");
+    if (!group || !left || !right) return;
+
+    const update = () => {
+        const max = group.scrollWidth - group.clientWidth;
+        left.classList.toggle("visible", group.scrollLeft > 2);
+        right.classList.toggle("visible", group.scrollLeft < max - 2);
+    };
+    const step = () => Math.max(160, group.clientWidth * 0.7);
+
+    // Atualiza também por temporizador: o evento "scroll" pode atrasar (aba em segundo plano)
+    const scrollTo = (delta) => {
+        group.scrollBy({ left: delta, behavior: "smooth" });
+        setTimeout(update, 450);
+    };
+    left.onclick = () => scrollTo(-step());
+    right.onclick = () => scrollTo(step());
+    group.addEventListener("scroll", update, { passive: true });
+    // Roda do mouse (vertical) rola a barra na horizontal
+    group.addEventListener(
+        "wheel",
+        (e) => {
+            if (group.scrollWidth <= group.clientWidth || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+            e.preventDefault();
+            group.scrollLeft += e.deltaY;
+        },
+        { passive: false }
+    );
+    if (window.ResizeObserver) new ResizeObserver(update).observe(group);
+    window.addEventListener("resize", update);
+    update();
+}
+
 window.addEventListener("DOMContentLoaded", () => {
+    setupToolbarScroll();
     bindAllEvents();
     setupCanvasInteractions();
     initEmptyOntology();

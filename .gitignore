@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Segredos locais
+.env
+
+# Arquivos enviados pelo upload (pasta UPLOAD_FOLDER)
+web/ontology/*
+!web/ontology/.gitkeep

@@ -1,61 +1,97 @@
+# Credenciais: os valores após ":-" são padrões de desenvolvimento.
+# Para trocá-los, crie um arquivo .env na raiz (veja .env.example).
+# Todas as portas ficam presas a 127.0.0.1: nada é exposto para a rede.
 services:
   # --- Banco de Dados: Neo4j ---
   neo4j:
     image: neo4j:5-community
     container_name: neo4j_db
     ports:
-      - "7474:7474"  # Interface Web (Browser)
-      - "7687:7687"  # Protocolo Bolt (para aplicações)
+      - "127.0.0.1:7474:7474"  # Interface Web (Browser)
+      - "127.0.0.1:7687:7687"  # Protocolo Bolt (para aplicações)
     environment:
-      - NEO4J_AUTH=neo4j/senha_forte_neo4j # Usuário: neo4j | Senha: senha_forte_neo4j
+      - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD:-senha_forte_neo4j}
     volumes:
       - neo4j_data:/data
       - neo4j_logs:/logs
+    healthcheck:
+      test: ["CMD-SHELL", "cypher-shell -u neo4j -p \"$${NEO4J_AUTH#neo4j/}\" 'RETURN 1'"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 30s
 
   # --- Banco de Dados: PostgreSQL ---
   postgres:
     image: postgres:16-alpine
     container_name: postgres_db
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     environment:
       - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=senha_forte_postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-senha_forte_postgres}
       - POSTGRES_DB=meubanco
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d meubanco"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
 
   # --- Banco de Dados: MongoDB ---
   mongo:
     image: mongo:7
     container_name: mongo_db
     ports:
-      - "27017:27017"
+      - "127.0.0.1:27017:27017"
     environment:
       - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=senha_forte_mongo
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD:-senha_forte_mongo}
     volumes:
       - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
 
   flask_app:
     build: .
     container_name: flask_app
+    restart: unless-stopped
     ports:
-      - "5000:5000"
+      - "127.0.0.1:5000:5000"
     environment:
+      - FLASK_DEBUG=${FLASK_DEBUG:-1}  # 1 = hot reload em desenvolvimento
+      - MAX_UPLOAD_MB=${MAX_UPLOAD_MB:-10}
+      - SECRET_KEY=${SECRET_KEY:-dev-secret-key-mude-em-producao}
+      # Senha das contas de demonstração criadas no primeiro boot (engenheiro, especialista, stakeholder)
+      - SEED_PASSWORD=${SEED_PASSWORD:-ontocube123}
+      - REPOS_DIR=/data/repos
+      # Agente LLM (Claude). Sem chave, o agente fica desativado e o resto funciona normalmente.
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - LLM_MODEL=${LLM_MODEL:-claude-opus-5-5}
+      - LLM_EFFORT=${LLM_EFFORT:-high}
+      - REASONER_TIMEOUT=${REASONER_TIMEOUT:-120}
       - NEO4J_URI=bolt://neo4j:7687
       - NEO4J_USER=neo4j
-      - NEO4J_PASSWORD=senha_forte_neo4j
-      - PG_DSN=host=postgres dbname=meubanco user=admin password=senha_forte_postgres
-      - MONGO_URI=mongodb://admin:senha_forte_mongo@mongo:27017/ontocube?authSource=admin
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD:-senha_forte_neo4j}
+      - PG_DSN=host=postgres dbname=meubanco user=admin password=${POSTGRES_PASSWORD:-senha_forte_postgres}
+      - MONGO_URI=mongodb://admin:${MONGO_PASSWORD:-senha_forte_mongo}@mongo:27017/ontocube?authSource=admin
       - MONGO_DB=ontocube
     volumes:
-      - ./web:/app
-      - ./web/ontology:/app/ontology
+      - ./web:/app  # código montado: alterações no host recarregam o Flask
+      - ontology_repos:/data/repos  # repositórios Git das ontologias governadas
+    # Só sobe o Flask quando os bancos estiverem prontos (o app cria a tabela do Postgres no boot)
     depends_on:
-      - neo4j
-      - postgres
-      - mongo
+      neo4j:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
 
 # Define os volumes para persistência dos dados (evita perder dados ao parar containers)
 volumes:
@@ -63,3 +99,4 @@ volumes:
   neo4j_logs:
   postgres_data:
   mongo_data:
+  ontology_repos:
